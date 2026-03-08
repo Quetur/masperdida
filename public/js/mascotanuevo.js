@@ -20,7 +20,7 @@ const configurarFiltrado = (idPadre, idHijo, atributoData) => {
   padre.addEventListener("change", function () {
     const seleccion = this.value;
     hijo.disabled = false;
-    hijo.value = ""; 
+    hijo.value = "";
     hijo.querySelectorAll("option").forEach((opt) => {
       const dataRelacion = opt.getAttribute(atributoData);
       if (!dataRelacion) return;
@@ -42,7 +42,9 @@ async function llena_locali(lat, lon) {
       document.querySelector('input[name="altura"]').value = data.numero || "";
       document.querySelector('input[name="cp"]').value = data.cp || "";
     }
-  } catch (e) { console.error("Error geocoding:", e); }
+  } catch (e) {
+    console.error("Error geocoding:", e);
+  }
 }
 
 // 5. NAVEGACIÓN (Stepper de 2 PASOS con Validación)
@@ -55,10 +57,10 @@ window.changeStep = function (step) {
 
     if (!cat || !titulo || !des) {
       Swal.fire({
-        icon: 'warning',
-        title: 'Faltan datos',
-        text: 'Por favor, completa el nombre, la descripción y la categoría.',
-        confirmButtonColor: '#2563eb'
+        icon: "warning",
+        title: "Faltan datos",
+        text: "Por favor, completa el nombre, la descripción y la categoría.",
+        confirmButtonColor: "#2563eb",
       });
       return; // Detiene el cambio de paso
     }
@@ -68,7 +70,9 @@ window.changeStep = function (step) {
   const progress = document.getElementById("progress-bar");
   const indicator = document.getElementById("step-indicator");
 
-  steps.forEach((el, i) => { if (el) el.classList.toggle("hidden", i !== step - 1); });
+  steps.forEach((el, i) => {
+    if (el) el.classList.toggle("hidden", i !== step - 1);
+  });
   if (indicator) indicator.innerText = `Paso ${step} de 2`;
   if (progress) progress.style.width = `${(step / 2) * 100}%`;
 
@@ -76,86 +80,143 @@ window.changeStep = function (step) {
   if (step === 2) {
     setTimeout(() => {
       const ocultarLeyenda = () => {
-        const leyenda = document.querySelector('.leyenda-mapa');
+        const leyenda = document.querySelector(".leyenda-mapa");
         if (leyenda) {
-          leyenda.style.opacity = '0';
+          leyenda.style.opacity = "0";
           setTimeout(() => leyenda.remove(), 500);
         }
       };
 
-      if (!document.querySelector('.leyenda-mapa')) {
-          const mapaDiv = document.getElementById('map');
-          const leyenda = document.createElement('div');
-          leyenda.className = 'leyenda-mapa animate-fade-in';
-          leyenda.innerText = 'Mueve el marcador o haz clic en el mapa para ubicar el suceso';
-          mapaDiv.parentElement.style.position = 'relative';
-          mapaDiv.parentElement.appendChild(leyenda);
+      if (!document.querySelector(".leyenda-mapa")) {
+        const mapaDiv = document.getElementById("map");
+        const leyenda = document.createElement("div");
+        leyenda.className = "leyenda-mapa animate-fade-in";
+        leyenda.innerText =
+          "Mueve el marcador o haz clic en el mapa para ubicar el suceso";
+        mapaDiv.parentElement.style.position = "relative";
+        mapaDiv.parentElement.appendChild(leyenda);
       }
 
       const iconoMascota = L.icon({
-        iconUrl: '/img/iconoperrogato.png',
+        iconUrl: "/img/iconoperrogato.png",
         iconSize: [45, 45],
         iconAnchor: [22, 45],
-        popupAnchor: [0, -40]
+        popupAnchor: [0, -40],
       });
 
       if (!map) {
-        map = L.map('map').setView([-34.6037, -58.3816], 13);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-        marker = L.marker([-34.6037, -58.3816], { draggable: true, icon: iconoMascota }).addTo(map);
+        map = L.map("map").setView([-34.6037, -58.3816], 13);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(
+          map
+        );
+        marker = L.marker([-34.6037, -58.3816], {
+          draggable: true,
+          icon: iconoMascota,
+        }).addTo(map);
 
-        map.on('click', function(e) {
-          ocultarLeyenda(); 
+        map.on("click", function (e) {
+          ocultarLeyenda();
           const { lat, lng } = e.latlng;
           marker.setLatLng([lat, lng]);
-          document.getElementById('latitud').value = lat;
-          document.getElementById('longitud').value = lng;
+          document.getElementById("latitud").value = lat;
+          document.getElementById("longitud").value = lng;
           llena_locali(lat, lng);
           marker.bindPopup("<b>Ubicación marcada</b>").openPopup();
         });
 
-        marker.on('dragend', function() {
+        marker.on("dragend", function () {
           ocultarLeyenda();
           const pos = marker.getLatLng();
-          document.getElementById('latitud').value = pos.lat;
-          document.getElementById('longitud').value = pos.lng;
+          document.getElementById("latitud").value = pos.lat;
+          document.getElementById("longitud").value = pos.lng;
           llena_locali(pos.lat, pos.lng);
         });
       }
 
       map.invalidateSize();
-
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition((pos) => {
-          const { latitude: lat, longitude: lon } = pos.coords;
-          const miPosicion = [lat, lon];
-          Swal.fire({
-            title: '¡Ubicación Detectada!',
-            text: 'Estás aquí, ahora marca donde viste o encontraste la mascota',
-            icon: 'success',
-            confirmButtonColor: '#2563eb'
-          });
-          map.flyTo(miPosicion, 17);
-          marker.setLatLng(miPosicion);
-          document.getElementById('latitud').value = lat;
-          document.getElementById('longitud').value = lon;
-          marker.bindPopup("<b>Tu ubicación actual</b>").openPopup();
-          llena_locali(lat, lon);
-        }, null, { enableHighAccuracy: true });
-      }
+      obtenerUbicacionPro();
     }, 400);
   }
+
   window.scrollTo(0, 0);
 };
+const obtenerUbicacionPro = () => {
+  // 1. Configuración de opciones (Performance vs Batería)
+  const geoOptions = {
+    enableHighAccuracy: true, // Usa GPS si está disponible
+    timeout: 8000, // Tiempo máximo de espera (8 segundos)
+    maximumAge: 60000, // Acepta una posición guardada si tiene menos de 1 min
+  };
 
+  // 2. Verificación de soporte
+  if (!navigator.geolocation) {
+    Swal.fire("Error", "Tu navegador no soporta geolocalización", "error");
+    return;
+  }
+
+  // Mostrar un loader mientras se "busca" el satélite/red
+  Swal.showLoading();
+
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const { latitude: lat, longitude: lon, accuracy } = pos.coords;
+      const miPosicion = [lat, lon];
+
+      console.log(`Precisión: ${accuracy} metros`);
+
+      Swal.fire({
+        title: "¡Ubicación Detectada!",
+        text: `Precisión de ${Math.round(
+          accuracy
+        )}m. Ahora marca el punto exacto.`,
+        icon: "success",
+        confirmButtonColor: "#2563eb",
+      });
+
+      // Actualizar Mapa e Inputs
+      map.flyTo(miPosicion, 17);
+      marker
+        .setLatLng(miPosicion)
+        .bindPopup("<b>Tu ubicación aproximada</b>")
+        .openPopup();
+
+      document.getElementById("latitud").value = lat;
+      document.getElementById("longitud").value = lon;
+
+      if (typeof llena_locali === "function") llena_locali(lat, lon);
+    },
+    (error) => {
+      // 3. Manejo profesional de errores (Obligatorio)
+      let mensaje = "No se pudo obtener la ubicación.";
+
+      switch (error.code) {
+        case error.PERMISSION_DENIED:
+          mensaje =
+            "Permiso denegado. Activa la ubicación en el candado de la barra de direcciones.";
+          break;
+        case error.POSITION_UNAVAILABLE:
+          mensaje =
+            "Información de ubicación no disponible (¿tienes el GPS activo?).";
+          break;
+        case error.TIMEOUT:
+          mensaje =
+            "La solicitud expiró. Inténtalo de nuevo en un espacio más abierto.";
+          break;
+      }
+
+      Swal.fire("Atención", mensaje, "warning");
+    },
+    geoOptions
+  );
+};
 // 6. EVENTOS PRINCIPALES, FOTO Y GRABADO
 document.addEventListener("DOMContentLoaded", () => {
-    const inputPerdida = document.getElementById("input_fecha_perdida");
+  const inputPerdida = document.getElementById("input_fecha_perdida");
   if (inputPerdida) {
     const hoy = new Date().toISOString().split("T")[0];
     inputPerdida.value = hoy; // Setea la fecha de hoy en el calendario
   }
-  
+
   // También el campo oculto por las dudas
   const fActualHidden = document.getElementById("fecha_actual");
   if (fActualHidden) {
@@ -163,7 +224,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   fixLeafletIcons();
   configurarFiltrado("id_tipo", "id_raza", "data-tipo");
-
 
   // Preview Foto
   document.getElementById("foto2")?.addEventListener("change", function (e) {
@@ -184,23 +244,22 @@ document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("formMascota");
   const btnGrabar = document.getElementById("btn-grabar");
 
-  form?.addEventListener("submit", function(e) {
-    const latInput = document.getElementById('latitud');
-    const lonInput = document.getElementById('longitud');
+  form?.addEventListener("submit", function (e) {
+    const latInput = document.getElementById("latitud");
+    const lonInput = document.getElementById("longitud");
 
     // Asegurar coordenadas antes de enviar
     if (!latInput.value || latInput.value === "") {
-        const currentPos = marker.getLatLng();
-        latInput.value = currentPos.lat;
-        lonInput.value = currentPos.lng;
+      const currentPos = marker.getLatLng();
+      latInput.value = currentPos.lat;
+      lonInput.value = currentPos.lng;
     }
 
     // Activar Spinner
     if (btnGrabar) {
-        btnGrabar.disabled = true;
-        document.getElementById("btn-text")?.classList.add("hidden");
-        document.getElementById("btn-spinner")?.classList.remove("hidden");
+      btnGrabar.disabled = true;
+      document.getElementById("btn-text")?.classList.add("hidden");
+      document.getElementById("btn-spinner")?.classList.remove("hidden");
     }
   });
-
 });
