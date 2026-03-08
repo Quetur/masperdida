@@ -1,0 +1,356 @@
+<link rel="stylesheet" href="/css/home.css">
+<!-- Leaflet CSS y JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+    /* Estilos base para los mapas */
+    #map-general {
+        height: 600px;
+        width: 100%;
+    }
+
+    #mini-map {
+        height: 250px;
+        width: 100%;
+        border-radius: 12px;
+        margin-top: 15px;
+        border: 1px solid #ddd;
+    }
+
+    /* Estilos de los modales */
+    #modal-mapa-general,
+    #detalle-pop-up {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.9);
+        z-index: 10000;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+
+    .modal-content-white {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    .hidden {
+        display: none !important;
+    }
+
+    .header-flex {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .btn-mapa-cercano {
+        background: #2563eb;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 10px;
+        cursor: pointer;
+        border: none;
+        font-weight: bold;
+    }
+</style>
+<style>
+    .btn-contacto-pro {
+        width: 100%;
+        padding: 16px;
+        background: #10b981;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 800;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-contacto-pro:hover {
+        background: #059669;
+        transform: translateY(-2px);
+    }
+</style>
+
+<section class="main-content-area">
+    <header class="content-header">
+        <div class="header-flex">
+            <h1>Catálogo de Mascotas</h1>
+            <button type="button" onclick="abrirMapaGeneral()" class="btn-mapa-cercano">
+                <i class="fas fa-map-marked-alt"></i> VER MAPA CERCANO
+            </button>
+        </div>
+
+        <div class="search-container">
+            <div class="search-form">
+                <input type="text" id="search-input" placeholder="Buscar por nombre o categoría...">
+                <span class="search-icon">🔍</span>
+            </div>
+        </div>
+        <p class="results-count">Mostrando <strong id="count">{{mascotas.length}}</strong> mascotas</p>
+    </header>
+
+    <div class="product-grid" id="product-grid">
+        {{#each mascotas}}
+        <article class="product-card" data-title="{{this.titulo}}" data-category="{{this.cat_des}}">
+            <div class="product-image">
+                <img src="{{#if this.foto2}}{{this.foto2}}{{else}}/img/placeholder.jpg{{/if}}" alt="{{this.titulo}}">
+                <span class="product-badge badge-estado">{{this.cat_des}}</span>
+            </div>
+            <div class="product-info">
+                <h3>{{this.titulo}}</h3>
+                <p class="description">{{this.des}}</p>
+            </div>
+            <footer class="product-footer">
+                <div class="location-info">
+                    <i class="fas fa-map-marker-alt"></i> {{this.direccion}}
+                </div>
+                <button type="button" class="btn-view" onclick="mostrarPopUp(this)" data-titulo="{{this.titulo}}"
+                    data-foto="{{#if this.foto2}}{{this.foto2}}{{else}}/img/placeholder.jpg{{/if}}"
+                    data-descripcion="{{this.des}}" data-direccion="{{this.direccion}}" data-lat="{{this.latitud}}"
+                    data-lng="{{this.longitud}}">
+                    <i class="fas fa-eye"></i> Ver Datos
+                </button>
+            </footer>
+        </article>
+        {{/each}}
+    </div>
+
+    <!-- MODAL MAPA GENERAL -->
+    <div id="modal-mapa-general">
+        <div class="modal-content-white" style="width: 95%; max-width: 1100px;">
+            <div
+                style="padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee;">
+                <h3 style="margin:0;">📍 Mascotas cerca de tu ubicación</h3>
+                <button onclick="cerrarMapaGeneral()"
+                    style="font-size: 30px; border: none; background: none; cursor: pointer;">&times;</button>
+            </div>
+            <div id="map-general"></div>
+        </div>
+    </div>
+
+    <!-- MODAL DETALLE INDIVIDUAL -->
+    <div id="detalle-pop-up">
+        <div class="modal-content-white"
+            style="flex-direction: row; flex-wrap: wrap; max-width: 900px; width: 95%; position: relative; max-height: 90vh; overflow-y: auto;">
+            <button onclick="cerrarPopUp()"
+                style="position: absolute; top: 15px; right: 15px; z-index: 100; font-size: 28px; border: none; background: white; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;">&times;</button>
+
+            <!-- Columna Imagen -->
+            <div style="flex: 1; min-width: 350px; background: #f1f5f9;">
+                <img id="pop-img" src=""
+                    style="width: 100%; height: 100%; min-height: 450px; object-fit: cover; display: block;">
+            </div>
+
+            <!-- Columna Información -->
+            <div style="flex: 1.2; min-width: 350px; padding: 35px; display: flex; flex-direction: column; gap: 15px;">
+                <div>
+                    <span id="pop-categoria"
+                        style="text-transform: uppercase; font-size: 12px; font-weight: 800; letter-spacing: 1px; color: #2563eb; background: #eff6ff; padding: 4px 12px; border-radius: 20px;"></span>
+                    <h2 id="pop-titulo"
+                        style="margin: 10px 0 5px 0; color: #0f172a; font-size: 32px; line-height: 1.1;"></h2>
+                    <div id="pop-direccion" style="color: #64748b; font-size: 14px; margin-bottom: 15px;"></div>
+                </div>
+
+                <!-- Grilla de Datos Rápidos -->
+                <div
+                    style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                    <div><small
+                            style="color: #94a3b8; display: block; font-size: 11px; text-transform: uppercase;">Tipo</small><strong
+                            id="pop-tipo" style="color: #334155;"></strong></div>
+                    <div><small
+                            style="color: #94a3b8; display: block; font-size: 11px; text-transform: uppercase;">Sexo</small><strong
+                            id="pop-sexo" style="color: #334155;"></strong></div>
+                    <div><small
+                            style="color: #94a3b8; display: block; font-size: 11px; text-transform: uppercase;">Raza</small><strong
+                            id="pop-raza" style="color: #334155;"></strong></div>
+                </div>
+
+                <div style="border-top: 1px solid #f1f5f9; padding-top: 15px;">
+                    <h4 style="margin: 0 0 5px 0; color: #1e293b;">Descripción</h4>
+                    <p id="pop-descripcion" style="color: #475569; font-size: 15px; line-height: 1.5; margin: 0;"></p>
+                </div>
+
+                <div id="pop-nota-container"
+                    style="background: #fffbeb; border-left: 4px solid #f59e0b; padding: 12px; margin-top: 5px;">
+                    <small style="color: #b45309; font-weight: bold; display: block;">Nota importante:</small>
+                    <span id="pop-nota" style="color: #92400e; font-size: 14px; font-style: italic;"></span>
+                </div>
+
+                <!-- Lógica de Contacto / Login -->
+                <div style="margin-top: auto; padding-top: 20px;">
+                    {{#if user}}
+                    <button class="btn-contacto-pro" onclick="solicitarDatos()">
+                        <i class="fas fa-envelope"></i> SOLICITAR DATOS DE CONTACTO
+                    </button>
+                    {{else}}
+                    <div style="text-align: center; background: #fee2e2; padding: 15px; border-radius: 10px;">
+                        <p style="color: #b91c1c; font-size: 14px; margin: 0 0 10px 0;">Debes iniciar sesión para
+                            contactar</p>
+                        <a href="/login"
+                            style="color: white; background: #dc2626; padding: 8px 20px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 14px; display: inline-block;">IR
+                            AL LOGIN</a>
+                    </div>
+                    {{/if}}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="no-results" class="hidden" style="text-align: center; padding: 50px;">
+        <p>No se encontraron mascotas.</p>
+    </div>
+</section>
+
+<script>
+    let mapaGeneral = null;
+    let miniMap = null;
+    let markersGroup = null;
+
+    // --- POPUP INDIVIDUAL ---
+    function mostrarPopUp(btn) {
+        // Extraer todos los atributos del botón
+        const data = {
+            titulo: btn.getAttribute('data-titulo'),
+            foto: btn.getAttribute('data-foto'),
+            categoria: btn.getAttribute('data-category'),
+            tipo: btn.getAttribute('data-tipo') || 'No especificado',
+            sexo: btn.getAttribute('data-sexo') || 'No especificado',
+            raza: btn.getAttribute('data-raza') || 'No especificada',
+            des: btn.getAttribute('data-descripcion'),
+            nota: btn.getAttribute('data-nota') || '',
+            direccion: btn.getAttribute('data-direccion')
+        };
+
+        // Inyectar en el Modal
+        document.getElementById('pop-titulo').innerText = data.titulo;
+        document.getElementById('pop-img').src = data.foto;
+        document.getElementById('pop-categoria').innerText = data.categoria;
+        document.getElementById('pop-tipo').innerText = data.tipo;
+        document.getElementById('pop-sexo').innerText = data.sexo;
+        document.getElementById('pop-raza').innerText = data.raza;
+        document.getElementById('pop-descripcion').innerText = data.des;
+        document.getElementById('pop-direccion').innerHTML = "📍 " + data.direccion;
+
+        // Nota condicional
+        const notaSpan = document.getElementById('pop-nota');
+        const notaCont = document.getElementById('pop-nota-container');
+        if (data.nota) {
+            notaSpan.innerText = data.nota;
+            notaCont.style.display = 'block';
+        } else {
+            notaCont.style.display = 'none';
+        }
+
+        document.getElementById('detalle-pop-up').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function solicitarDatos() {
+        // Aquí puedes disparar un SweetAlert o un fetch al backend
+        alert("Solicitud enviada al dueño. Te contactaremos pronto.");
+    }
+
+
+    function cerrarPopUp() {
+        document.getElementById('detalle-pop-up').style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+
+    // --- MAPA GENERAL CON ICONOS DE IMAGEN ---
+    function abrirMapaGeneral() {
+        document.getElementById('modal-mapa-general').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+
+        if (!mapaGeneral) {
+            mapaGeneral = L.map('map-general').setView([-34.6037, -58.3816], 12);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap'
+            }).addTo(mapaGeneral);
+            markersGroup = L.layerGroup().addTo(mapaGeneral);
+        }
+
+        setTimeout(() => {
+            mapaGeneral.invalidateSize();
+            markersGroup.clearLayers();
+
+            document.querySelectorAll('.btn-view').forEach(btn => {
+                const lat = parseFloat(btn.getAttribute('data-lat'));
+                const lng = parseFloat(btn.getAttribute('data-lng'));
+
+                if (!isNaN(lat) && lat !== 0) {
+                    const foto = btn.getAttribute('data-foto');
+                    const titulo = btn.getAttribute('data-titulo');
+
+                    // Definición del Icono Personalizado (Imagen de la mascota)
+                    const mascotaIcon = L.divIcon({
+                        className: 'custom-pet-icon',
+                        html: `
+                            <div style="
+                                width: 50px; 
+                                height: 50px; 
+                                border: 3px solid white; 
+                                border-radius: 50%; 
+                                overflow: hidden; 
+                                box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+                                background: white;">
+                                <img src="${foto}" style="width: 100%; height: 100%; object-fit: cover;">
+                            </div>
+                            <div style="
+                                width: 0; 
+                                height: 0; 
+                                border-left: 8px solid transparent;
+                                border-right: 8px solid transparent;
+                                border-top: 10px solid white;
+                                margin: -2px auto 0;">
+                            </div>`,
+                        iconSize: [50, 60],
+                        iconAnchor: [25, 60],
+                        popupAnchor: [0, -60]
+                    });
+
+                    L.marker([lat, lng], { icon: mascotaIcon })
+                        .addTo(markersGroup)
+                        .bindPopup(`<b style="font-family: sans-serif;">${titulo}</b>`);
+                }
+            });
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((pos) => {
+                    const userCoords = [pos.coords.latitude, pos.coords.longitude];
+                    mapaGeneral.setView(userCoords, 14);
+                    L.circleMarker(userCoords, { radius: 8, color: '#2563eb', fillColor: '#fff', fillOpacity: 1 }).addTo(markersGroup).bindPopup("Tu ubicación");
+                });
+            }
+        }, 400);
+    }
+
+    function cerrarMapaGeneral() {
+        document.getElementById('modal-mapa-general').style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+
+    // BUSCADOR
+    document.getElementById('search-input')?.addEventListener('input', function (e) {
+        const term = e.target.value.toLowerCase();
+        const cards = document.querySelectorAll('.product-card');
+        let count = 0;
+        cards.forEach(card => {
+            const match = (card.getAttribute('data-title') + card.getAttribute('data-category')).toLowerCase().includes(term);
+            card.style.display = match ? 'block' : 'none';
+            if (match) count++;
+        });
+        document.getElementById('count').innerText = count;
+        document.getElementById('no-results').classList.toggle('hidden', count !== 0);
+    });
+</script>

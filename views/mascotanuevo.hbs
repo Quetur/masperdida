@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nueva Mascota</title>
+
+  <!-- 1. SWEETALERT CORREGIDO (Link completo) -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <!-- 2. TAILWIND -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- 3. FONTAWESOME (Para los iconos) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com" />
+
+  <!-- 4. LEAFLET CSS Y JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <style>
+    /* El mapa necesita altura para verse */
+    #map {
+      height: 400px;
+      width: 100%;
+      border-radius: 12px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .leaflet-container img {
+      max-width: none !important;
+      max-height: none !important;
+    }
+
+    .leyenda-mapa {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1001;
+      background: rgba(255, 255, 255, 0.98);
+      padding: 18px 30px;
+      border-radius: 50px;
+      font-weight: 900;
+      font-size: 16px;
+      /* Aumentado */
+      color: #1e40af;
+      border: 3px solid #3b82f6;
+      pointer-events: none;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      width: 90%;
+      max-width: 500px;
+      text-transform: uppercase;
+      transition: opacity 0.5s ease;
+      /* Para que desaparezca suave */
+    }
+  </style>
+</head>
+
+
+<body class="bg-gray-200 p-4 md:p-10 font-sans">
+  <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-300">
+
+    <!-- Header -->
+    <div class="bg-blue-600 px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <i class="fas fa-plus-circle text-white text-xl"></i>
+        <h2 class="text-white font-bold text-xl tracking-wide">Publicar Nueva Mascota</h2>
+      </div>
+      <span id="step-indicator" class="text-blue-200 text-xs font-black uppercase tracking-tighter">Paso 1 de 2</span>
+    </div>
+
+    <!-- Barra de Progreso -->
+    <div class="flex h-1.5 w-full bg-gray-100">
+      <div id="progress-bar" class="bg-yellow-400 w-1/2 transition-all duration-500"></div>
+    </div>
+
+    <form action="/mascota_nuevo_graba" method="POST" enctype="multipart/form-data" class="p-8" id="formMascota">
+
+      <!-- Campos Ocultos Técnicos -->
+      <div style="display: none;">
+        <input type="hidden" name="visible" value="1">
+        <input type="hidden" name="orden" value="1">
+        <input type="hidden" name="fecha" id="fecha_actual">
+        <input type="hidden" name="precio1" value="0">
+        <input type="hidden" name="id_usuario" value="{{userid}}">
+      </div>
+
+      <!-- PASO 1: DATOS GENERALES -->
+      <div id="step-1" class="space-y-8 animate-fade-in">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Categoría -->
+          <div class="md:col-span-2 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+            <label class="block text-[11px] font-extrabold text-blue-700 uppercase mb-2 tracking-widest">¿Qué le pasó a
+              la mascota?</label>
+            <select name="id_categoria" id="id_categoria"
+              class="w-full border border-blue-300 p-3.5 rounded-lg bg-blue-100 font-semibold outline-none focus:bg-white"
+              required>
+              <option value="" disabled selected>-- Elija opción --</option>
+              {{#each cat}}<option value="{{this.id_categoria}}">{{this.des}}</option>{{/each}}
+            </select>
+          </div>
+
+          <!-- Tipo -->
+          <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+            <label class="block text-[11px] font-extrabold text-blue-700 uppercase mb-2 tracking-widest">Tipo de mascota</label>
+            <select name="id_tipo" id="id_tipo"
+              class="w-full border border-blue-300 p-3.5 rounded-lg bg-blue-100 font-semibold outline-none" required>
+              <option value="" disabled selected>-- Mascota --</option>
+              {{#each tipo}}<option value="{{this.id_tipo}}">{{this.des}}</option>{{/each}}
+            </select>
+          </div>
+
+          <!-- Raza -->
+          <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+            <label class="block text-[11px] font-extrabold text-blue-700 uppercase mb-2 tracking-widest">Raza</label>
+            <select name="id_raza" id="id_raza"
+              class="w-full border border-blue-300 p-3.5 rounded-lg bg-blue-100 font-semibold outline-none disabled:opacity-50"
+              required disabled>
+              <option value="" disabled selected>-- Raza --</option>
+              {{#each raza}}
+              <option value="{{this.id_raza}}" data-tipo="{{this.id_tipo}}" class="raza-option hidden">{{this.des}}
+              </option>
+              {{/each}}
+            </select>
+          </div>
+        </div>
+
+        <!-- Sexo y Fechas -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-6 rounded-2xl border border-gray-200">
+          <div>
+            <label
+              class="block text-[10px] font-bold text-gray-500 uppercase mb-3 text-center tracking-widest">Sexo</label>
+            <div class="flex gap-3">
+              <label class="flex-1">
+                <input type="radio" name="sexo" value="Macho" class="hidden peer" required>
+                <div
+                  class="text-center p-3 border border-blue-300 rounded-xl cursor-pointer bg-blue-100 peer-checked:bg-blue-700 peer-checked:text-white font-bold text-sm">
+                  Macho</div>
+              </label>
+              <label class="flex-1">
+                <input type="radio" name="sexo" value="Hembra" class="hidden peer">
+                <div
+                  class="text-center p-3 border border-pink-300 rounded-xl cursor-pointer bg-pink-100 peer-checked:bg-pink-600 peer-checked:text-white font-bold text-sm">
+                  Hembra</div>
+              </label>
+            </div>
+          </div>
+          <div id="contenedor-fechas">
+            <div id="div_fecha_perdida">
+              <label class="block text-[10px] font-bold text-gray-500 uppercase mb-3 text-center tracking-widest">Fecha
+                del Suceso</label>
+              <input name="fecha_perdida" id="input_fecha_perdida" type="date"
+                class="w-full border border-blue-300 p-3 rounded-xl bg-blue-100 outline-none">
+            </div>
+
+            <div id="div_fecha_nacimiento" class="hidden">
+              <label class="block text-[10px] font-bold text-gray-500 uppercase mb-3 text-center tracking-widest">Fecha
+                de Nacimiento (Aprox)</label>
+              <input name="fecha_nacimiento" id="input_fecha_nacimiento" type="date"
+                class="w-full border border-blue-300 p-3 rounded-xl bg-blue-100 outline-none">
+            </div>
+          </div>
+        </div>
+
+        <!-- Foto y Textos -->
+        <div class="flex flex-col md:flex-row gap-8">
+          <div class="w-full md:w-1/2 flex flex-col items-center">
+            <div
+              class="w-full aspect-square bg-blue-100 rounded-2xl border-2 border-dashed border-blue-300 flex items-center justify-center relative overflow-hidden">
+              <img id="img_preview" class="w-full h-full object-cover hidden" />
+              <div id="placeholder" class="text-blue-400 text-center"><i class="fas fa-camera text-5xl mb-2"></i>
+                <p class="text-[10px] font-black uppercase">Foto</p>
+              </div>
+            </div>
+            <button type="button" onclick="document.getElementById('foto2').click()"
+              class="mt-4 w-full bg-blue-600 text-white font-bold py-2 rounded-full text-sm">Subir Foto</button>
+            <input type="file" name="foto2" id="foto2" accept="image/*" class="hidden" />
+          </div>
+          <div class="w-full md:w-1/2 space-y-4">
+            <input name="titulo" type="text"
+              class="w-full border border-blue-300 p-3.5 rounded-xl bg-blue-100 outline-none font-semibold"
+              placeholder="Nombre de la mascota" required>
+                  <label class="block text-[10px] font-bold text-gray-500 uppercase mb-3 text-center tracking-widest">Descripcion detallada</label>
+            <textarea name="des" rows="4"
+              class="w-full border border-blue-300 p-3.5 rounded-xl bg-blue-100 outline-none resize-none font-semibold"
+            
+              placeholder="Color, Tamaño, Collar, otras señas particulares" required></textarea>
+          </div>
+        </div>
+
+        <button type="button" onclick="changeStep(2)"
+          class="w-full bg-blue-600 text-white font-black py-5 rounded-2xl shadow-lg uppercase tracking-widest hover:bg-blue-700 transition-all">Siguiente:
+          Ubicación <i class="fas fa-arrow-right ml-2"></i></button>
+      </div>
+
+      <!-- PASO 2: UBICACIÓN EN EL MAPA -->
+      <div id="step-2" class="hidden animate-fade-in space-y-6">
+        <div class="bg-blue-50 p-4 rounded-xl border border-blue-200">
+          <p class="text-blue-800 text-sm font-bold text-center italic">
+            Mueve el marcador o haz clic en el mapa para ubicar el suceso
+          </p>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-lg border-2 border-blue-200 overflow-hidden relative">
+          <div id="map" style="height: 400px;"></div>
+        </div>
+
+        <!-- Inputs ocultos para coordenadas -->
+        <input type="hidden" name="latitud" id="latitud">
+        <input type="hidden" name="longitud" id="longitud">
+
+        <!-- Botones Inferiores -->
+        <div class="flex gap-4 mt-8 px-2">
+          <button type="button" onclick="changeStep(1)"
+            class="flex-1 bg-gray-300 text-gray-800 py-5 rounded-2xl font-extrabold uppercase text-xs hover:bg-gray-400 transition-all border-b-4 border-gray-400">
+            <i class="fas fa-chevron-left mr-2"></i> Volver Atrás
+          </button>
+
+          <button type="submit" id="btn-grabar"
+            class="flex-1 bg-blue-700 text-white font-black py-5 rounded-2xl uppercase shadow-xl flex items-center justify-center">
+            <span id="btn-text">Grabar Publicación</span>
+            <span id="btn-spinner" class="hidden"><i class="fas fa-spinner fa-spin mr-2"></i> Guardando...</span>
+          </button>
+
+
+        </div>
+
+
+
+
+
+    </form>
+  </div>
+
+
+
+  <!-- 1. jQuery de Google -->
+  <script src="https://code.jquery.com"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <!-- 2. Tu archivo (ahora con el auto-reintento) -->
+  <script src="/js/mascotanuevo.js"></script>
+
+  <script>
+
+
+    function initBasicMap() {
+      if (map) return; // Si ya existe, no hacer nada
+
+      // Inicializar apuntando al ID 'map'
+      map = L.map('map').setView([-34.6037, -58.3816], 13);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap'
+      }).addTo(map);
+
+      // Forzar el redibujado inmediato
+      setTimeout(() => { map.invalidateSize(); }, 100);
+    }
+
+  </script>
+
+
+
+
+
+  <script src="https://unpkg.com"></script>
+</body>
+
+</html>

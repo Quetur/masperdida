@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{{title}}</title>
+
+    <!-- CARGA DE LIBRERÍAS (URLs Actualizadas y Seguras) -->
+    <link href="https://cdn.jsdelivr.net" rel="stylesheet">
+    <link href="https://fonts.googleapis.com" rel="stylesheet">
+    <link rel="stylesheet" href="/css/usuario.css">
+
+    <script src="https://cdn.jsdelivr.net"></script>
+    <script src="https://cdn.jsdelivr.net"></script>
+
+    <style>
+        #modalPIN {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); z-index: 9999; align-items: center; justify-content: center;
+        }
+        #modalPIN.active { display: flex; }
+        .pin-container { display: flex; justify-content: center; gap: 10px; margin: 20px 0; }
+        .pin-in { width: 45px; height: 60px; text-align: center; font-size: 1.5rem; font-weight: 800; border-radius: 12px; border: 2px solid #ced4da; }
+        .btn-toggle-eye { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 1.2rem; }
+        .btn-close-custom { position: absolute; top: 15px; right: 20px; border: none; background: none; font-size: 1.5rem; color: #6c757d; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="register-card">
+        <div class="brand-header">
+            <h1>Mascota Perdida</h1>
+            <div class="divider"></div>
+            <p>Crear Nueva Cuenta</p>
+        </div>
+
+        <form id="formRegistro" method="POST" action="/registrar">
+            <label class="form-label">NOMBRE COMPLETO</label>
+            <div class="input-wrapper">
+                <input type="text" name="nombre" id="nombre" class="form-control-custom" placeholder="Ej: Juan Pérez" required>
+            </div>
+
+            <label class="form-label">NÚMERO DE CELULAR (ID)</label>
+            <div class="input-wrapper">
+                <input type="tel" id="celular_mask" class="form-control-custom" placeholder="(XX) XXXX-XXXX" maxlength="15" required>
+                <input type="hidden" name="celular" id="celular_final">
+            </div>
+
+            <label class="form-label">CORREO ELECTRÓNICO</label>
+            <div class="input-wrapper">
+                <input type="email" name="email" id="email" class="form-control-custom" placeholder="usuario@email.com">
+            </div>
+
+            <label class="form-label">CONTRASEÑA</label>
+            <div class="input-wrapper">
+                <input type="password" name="pass" id="pass" class="form-control-custom" placeholder="Crea tu clave segura" required>
+                <button type="button" id="btn-toggle" class="btn-toggle-eye">👁️</button>
+            </div>
+
+            <button type="button" onclick="validarRegistro()" class="btn-submit" id="btn-registrar">REGISTRARME AHORA</button>
+        </form>
+    </div>
+
+    <!-- MODAL PIN PERSONALIZADO -->
+    <div id="modalPIN">
+        <div class="modal-content" style="max-width: 400px; border-radius: 25px; background: white; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); position: relative;">
+            
+            <button type="button" onclick="cerrarModal()" class="btn-close-custom">&times;</button>
+
+            <div class="text-center">
+                <h2 class="fw-bold" style="color: #0d6efd;">🐾 Verifica tu celular</h2>
+                <p class="text-muted small">Ingresa el PIN enviado al:<br><strong id="txt_celular"></strong></p>
+                
+                <div class="mb-3">
+                    <span class="badge bg-light text-danger border">Intentos restantes: <span id="contador_visual">5</span></span>
+                </div>
+
+                <form id="formVerificar" method="POST" action="/verificar-codigo">
+                    <input type="hidden" name="celular" id="pin_celular_hidden">
+                    <input type="hidden" name="intentos" id="intentos_hidden" value="{{#if intentos}}{{intentos}}{{else}}5{{/if}}">
+                    
+                    <div class="pin-container">
+                        <input type="text" class="pin-in" maxlength="1" inputmode="numeric" required>
+                        <input type="text" class="pin-in" maxlength="1" inputmode="numeric" required>
+                        <input type="text" class="pin-in" maxlength="1" inputmode="numeric" required>
+                        <input type="text" class="pin-in" maxlength="1" inputmode="numeric" required>
+                    </div>
+                    <input type="hidden" name="codigo" id="pin_completo">
+                    <button type="button" onclick="enviarPin()" class="btn-submit w-100" id="btn-verificar">VERIFICAR</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. MÁSCARA CELULAR (JS PURO) ---
+        const mask = document.getElementById('celular_mask');
+        const final = document.getElementById('celular_final');
+
+        mask.addEventListener('input', (e) => {
+            let v = e.target.value.replace(/\D/g, "");
+            let f = "";
+            if (v.length > 0) {
+                f = "(" + v.substring(0, 2);
+                if (v.length > 2) f += ") " + v.substring(2, 6);
+                if (v.length > 6) f += "-" + v.substring(6, 10);
+            }
+            e.target.value = f;
+            final.value = v;
+        });
+
+        // --- 2. OJITO PASSWORD (JS PURO) ---
+        document.getElementById('btn-toggle').addEventListener('click', function () {
+            const p = document.getElementById('pass');
+            p.type = p.type === 'password' ? 'text' : 'password';
+            this.innerText = p.type === 'password' ? '👁️' : '🙈';
+        });
+
+        // --- 3. LÓGICA DEL PIN (JS PURO) ---
+        const pins = document.querySelectorAll('.pin-in');
+        pins.forEach((input, idx) => {
+            input.addEventListener('input', (e) => {
+                if (e.target.value && idx < 3) pins[idx + 1].focus();
+                let res = "";
+                pins.forEach(i => res += i.value);
+                document.getElementById('pin_completo').value = res;
+            });
+            input.addEventListener('keydown', (e) => {
+                if (e.key === "Backspace" && !e.target.value && idx > 0) pins[idx - 1].focus();
+            });
+        });
+
+        // --- 4. CONTROL DEL MODAL ---
+        window.onload = () => {
+            const debeMostrar = "{{showModal}}";
+            if (debeMostrar === "true") {
+                const num = "{{celular}}";
+                const intentosActuales = "{{intentos}}" || "5";
+
+                document.getElementById('txt_celular').innerText = `(${num.substring(0,2)}) ${num.substring(2,6)}-${num.substring(6,10)}`;
+                document.getElementById('pin_celular_hidden').value = num;
+                document.getElementById('contador_visual').innerText = intentosActuales;
+                document.getElementById('intentos_hidden').value = intentosActuales;
+
+                document.getElementById('modalPIN').classList.add('active');
+
+                {{#if error_pin}}
+                    Swal.fire({ icon: 'error', title: 'PIN Incorrecto', text: 'Te quedan ' + intentosActuales + ' intentos.', confirmButtonColor: '#0d6efd' });
+                {{/if}}
+            }
+        };
+
+        function cerrarModal() {
+            document.getElementById('modalPIN').classList.remove('active');
+            document.getElementById('btn-registrar').disabled = false;
+            document.getElementById('btn-registrar').innerHTML = 'REGISTRARME AHORA';
+        }
+
+        function validarRegistro() {
+            if (final.value.length < 10) {
+                Swal.fire({ icon: 'warning', title: 'Celular incompleto' });
+                return;
+            }
+            document.getElementById('btn-registrar').disabled = true;
+            document.getElementById('formRegistro').submit();
+        }
+
+        function enviarPin() {
+            if (document.getElementById('pin_completo').value.length < 4) return;
+            document.getElementById('btn-verificar').disabled = true;
+            document.getElementById('formVerificar').submit();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,203 @@
+<style>
+    /* Estructura Base y Colores */
+    .sidebar-inner { padding: 20px; }
+    .sidebar-header { margin-bottom: 20px; }
+    .sidebar-title { font-size: 1.2rem; color: #1f2937; margin: 0; font-weight: 700; }
+    .divider { border: 0; border-top: 1px solid #e5e7eb; margin: 15px 0; }
+    
+    .filter-section-title { 
+        font-size: 0.75rem; 
+        font-weight: 800; 
+        color: #9ca3af; 
+        text-transform: uppercase; 
+        letter-spacing: 0.1em;
+        margin: 20px 0 10px 0;
+    }
+
+    /* Botón Toggle - Sincronizado con main.hbs */
+    .toggle-handler {
+        position: absolute;
+        right: -40px; 
+        top: 20px;
+        width: 40px;
+        height: 40px;
+        background-color: #2563eb;
+        color: white;
+        border: none;
+        border-radius: 0 8px 8px 0;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+        z-index: 1001;
+        font-size: 1.2rem;
+        transition: background 0.3s ease;
+    }
+
+    .toggle-handler:hover { background-color: #1d4ed8; }
+
+    /* Checkboxes Personalizados */
+    .custom-check {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        cursor: pointer;
+        padding: 8px 0;
+        border-radius: 6px;
+        transition: background 0.2s;
+    }
+    .custom-check:hover { background-color: #f9fafb; }
+    .custom-check input { position: absolute; opacity: 0; width: 0; height: 0; }
+
+    .box {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #d1d5db;
+        border-radius: 5px;
+        display: inline-block;
+        position: relative;
+        background: white;
+        transition: all 0.2s ease;
+    }
+
+    .custom-check input:checked + .box {
+        background-color: #2563eb;
+        border-color: #2563eb;
+    }
+
+    .custom-check input:checked + .box::after {
+        content: "✓";
+        color: white;
+        font-size: 14px;
+        position: absolute;
+        top: 45%; left: 50%;
+        transform: translate(-50%, -50%);
+        font-weight: bold;
+    }
+
+    .label-text { font-size: 0.9rem; color: #374151; font-weight: 500; }
+
+    /* --- SPINNER DE CARGA --- */
+    .loader-container {
+        display: none; /* Se activa por JS */
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 25px 0;
+        background: #f8fafc;
+        border-radius: 12px;
+        margin-top: 20px;
+        border: 1px dashed #cbd5e1;
+    }
+
+    .spinner {
+        width: 28px;
+        height: 28px;
+        border: 3px solid #e2e8f0;
+        border-top: 3px solid #2563eb;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    .loader-text {
+        font-size: 0.7rem;
+        color: #2563eb;
+        margin-top: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .filter-form.loading {
+        opacity: 0.4;
+        pointer-events: none;
+    }
+</style>
+
+<aside id="sidebar" class="sidebar">
+    <!-- BOTÓN LIMPIO: La flecha se gestiona desde main.hbs -->
+    <button type="button" id="toggle-btn" class="toggle-handler" title="Alternar filtros">
+        ⬅
+    </button>
+
+    <div class="sidebar-inner">
+        <div class="sidebar-header">
+            <h2 class="sidebar-title">Filtros</h2>
+            <hr class="divider">
+        </div>
+
+        <form action="/mascotas" method="GET" class="filter-form" id="sidebar-form">
+            
+            <!-- GRUPO ESTADO (Categorías) -->
+            <div class="checkbox-group">
+                <h3 class="filter-section-title">Estado</h3>
+                {{#each categorias}}
+                <label class="custom-check">
+                    <input type="checkbox" name="f{{this.id_categoria}}" value="{{this.id_categoria}}" 
+                        {{isChecked ../filtros (concat "f" this.id_categoria)}}>
+                    <span class="box"></span>
+                    <span class="label-text">{{this.des}}</span>
+                </label>
+                {{else}}
+                <p class="text-xs text-gray-400">Sin estados disponibles</p>
+                {{/each}}
+            </div>
+
+            <hr class="divider">
+
+            <!-- GRUPO TIPO (Perro, Gato, etc) -->
+            <div class="checkbox-group">
+                <h3 class="filter-section-title">Tipo de Mascota</h3>
+                {{#each tipos}}
+                <label class="custom-check">
+                    <input type="checkbox" name="t{{this.id_tipo}}" value="{{this.id_tipo}}" 
+                        {{isChecked ../filtros (concat "t" this.id_tipo)}}>
+                    <span class="box"></span>
+                    <span class="label-text">{{this.des}}</span>
+                </label>
+                {{else}}
+                <p class="text-xs text-gray-400">Sin tipos disponibles</p>
+                {{/each}}
+            </div>
+
+            <!-- CONTENEDOR DE LA RUEDITA -->
+            <div id="sidebar-loader" class="loader-container">
+                <div class="spinner"></div>
+                <p class="loader-text">Actualizando lista...</p>
+            </div>
+        </form>
+    </div>
+</aside>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('sidebar-form');
+        const loader = document.getElementById('sidebar-loader');
+        const groups = document.querySelectorAll('.checkbox-group');
+
+        groups.forEach(group => {
+            const checkboxes = group.querySelectorAll('input[type="checkbox"]');
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function () {
+                    // 1. Comportamiento Radio (Un solo check por sección)
+                    if (this.checked) {
+                        checkboxes.forEach(cb => { if (cb !== this) cb.checked = false; });
+                    }
+
+                    // 2. Activar Spinner visual
+                    if (loader) loader.style.display = 'flex';
+                    if (form) form.classList.add('loading');
+
+                    // 3. Enviar Formulario
+                    form.submit();
+                });
+            });
+        });
+    });
+</script>

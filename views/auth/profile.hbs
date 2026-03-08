@@ -1,0 +1,61 @@
+<body>
+<div class="container p-4">
+    <div class="row">
+        <div class="col-md-4 mx-auto">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3>Bienvenido {{nombre}}</h3>
+              
+                    <h4>Elegi una opcion del Menu</h4>
+                    <!-- <a href="/links" class="btn btn-primary m-4">
+                        Save your Links    
+                    </a>
+                    -->
+                     <input type="hidden" id="dni" name="dni" placeholder="" value="{{userid}}" readonly ></input>
+                     <input type="hidden" id="nombreusuario" name="nombreusuario" placeholder="" value="{{nombre}}" readonly ></input>
+                     <input type="hidden" id="token" name="token" placeholder="" value="{{token}}" readonly ></input>
+                     <input type="hidden" id="alert" name="alert" placeholder="" value="{{alert}}" readonly ></input>
+                     
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script type="text/javascript">
+console.log("entre en profile del auth")
+   console.log("dni", document.getElementById('dni').value)
+    console.log("nombre", document.getElementById('nombreusuario').value)
+    console.log("token", document.getElementById('token').value)
+  setTimeout(() => {
+    console.log("Tarea ejecutada tras 3 segundos");
+  }, 5000);
+ const pausa = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+async function ejecutar() {
+  console.log("Esperando...");
+  await pausa(3000); // El código se detiene aquí 3 segundos
+  console.log("Tarea ejecutada tras 3 segundos");
+}
+ejecutar();
+
+
+
+  
+  // Este código se ejecuta en el navegador del cliente
+ const mtoken = document.getElementById('token').value;
+  console.log("mtoken",mtoken)
+  if (document.getElementById('token').value) {
+    console.log("graba sesion")
+    sessionStorage.setItem('token_acceso', mtoken);
+    sessionStorage.setItem("nombre", document.getElementById('nombreusuario').value);
+    console.log('Token guardado correctamente');
+  }
+else {
+    console.log('No se recibió ningún token');
+  }
+  
+  window.location = "{{ruta}}";
+</script>
+</body>

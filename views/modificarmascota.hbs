@@ -1,0 +1,126 @@
+<head>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome para iconos -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+
+<body class="bg-gray-100 py-10 px-4">
+  <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
+    
+    <!-- Cabecera del Formulario -->
+    <div class="bg-blue-600 p-6">
+      <h2 class="text-white text-2xl font-bold flex items-center gap-2">
+        <i class="fas fa-edit"></i> Modificar Mascota
+      </h2>
+    </div>
+
+    <div class="p-8">
+      <!-- Selector de Categoría (Fuera del loop de Mascota si es general) -->
+      <div class="mb-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
+        <label class="block text-sm font-semibold text-gray-700 mb-2 uppercase tracking-wider">Categoría Principal</label>
+        <select id="combo_categoria" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white transition-all">
+          {{#each cat}}
+            <option value="{{id_categoria}}" {{#if id_categoria_Mascota}}selected{{/if}}>{{des}}</option>
+          {{/each}}
+        </select>
+      </div>
+
+      {{#each pro}}
+      <form action="/Mascotamodi/{{id_Mascota}}" method="post" class="space-y-6">
+        <!-- Input oculto para la categoría sincronizado por JS -->
+        <input type="hidden" id="id_categoria" name="id_categoria" value="{{id_categoria}}">
+        <input type="hidden" name="visible" value="{{visible}}">
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          <!-- Columna Izquierda: Imagen -->
+          <div class="flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-xl p-4 bg-gray-50">
+            <label class="text-sm font-medium text-gray-500 mb-4 uppercase">Imagen del Mascota</label>
+            <div class="relative group">
+              <img src="{{foto2}}" class="w-64 h-64 object-cover rounded-lg shadow-md mb-4 group-hover:opacity-75 transition-opacity" />
+              <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <span class="bg-black text-white px-3 py-1 rounded-full text-xs">Imagen Actual</span>
+              </div>
+            </div>
+            <p class="text-xs text-blue-600 font-semibold cursor-pointer hover:underline">
+              <i class="fas fa-upload"></i> Cambiar imagen
+            </p>
+          </div>
+
+          <!-- Columna Derecha: Datos -->
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Título del Mascota</label>
+              <input type="text" name="titulo" value="{{titulo}}" 
+                class="w-full p-3 border border-gray-300 rounded-lg focus:border-blue-500 outline-none font-semibold">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Descripción Corta</label>
+              <input type="text" name="des" value="{{des}}" 
+                class="w-full p-3 border border-gray-300 rounded-lg focus:border-blue-500 outline-none">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Precio de Venta</label>
+              <div class="relative">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500 font-bold">$</span>
+                <input type="number" step="0.01" name="precio1" value="{{precio1}}" required
+                  class="w-full pl-8 p-3 border border-gray-300 rounded-lg focus:border-green-500 outline-none text-green-700 font-bold text-xl">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Nota Interna</label>
+              <textarea name="nota" rows="2" 
+                class="w-full p-3 border border-gray-300 rounded-lg focus:border-blue-500 outline-none text-sm italic text-gray-600">{{nota}}</textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botones de Acción -->
+        <div class="flex flex-col md:flex-row gap-4 pt-6 border-t border-gray-100">
+          <button type="submit" 
+            class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-xl shadow-lg transition-all transform hover:-translate-y-1">
+            <i class="fas fa-save mr-2"></i> Grabar Cambios
+          </button>
+          <button type="button" onclick="cancelar()" 
+            class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-4 rounded-xl transition-all">
+            Cancelar
+          </button>
+        </div>
+      </form>
+      {{/each}}
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com"></script>
+  <script src="https://cdn.jsdelivr.net"></script>
+
+  <script>
+    // Sincronizar el select de categoría con el input hidden del form
+    $('#combo_categoria').change(function() {
+      const selectedVal = $(this).val();
+      $('#id_categoria').val(selectedVal);
+      console.log('Categoría actualizada:', selectedVal);
+    });
+
+    function cancelar() {
+      Swal.fire({
+        title: '¿Descartar cambios?',
+        text: "Se perderán las modificaciones no guardadas",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Sí, salir',
+        cancelButtonText: 'Seguir editando'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          window.location.href = "/Mascotacambia";
+        }
+      });
+    }
+  </script>
+</body>

@@ -1,0 +1,163 @@
+:root {
+    --primary-color: #0d6efd;
+    --primary-hover: #0b5ed7;
+    --bg-gradient: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg-gradient);
+    min-height: 100vh;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 0;
+}
+
+.register-card {
+    background: #ffffff;
+    width: 95%;
+    max-width: 450px;
+    padding: 35px 25px;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+}
+
+.brand-header { text-align: center; margin-bottom: 25px; }
+.brand-header h1 { color: var(--primary-color); font-weight: 800; font-size: 1.6rem; margin: 0; }
+.brand-header .divider { width: 40px; height: 3px; background: var(--primary-color); margin: 8px auto; border-radius: 2px; }
+.brand-header p { color: #6c757d; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+
+.form-label { font-size: 0.7rem; font-weight: 700; color: #495057; margin-bottom: 5px; display: block; }
+
+.input-wrapper { position: relative; margin-bottom: 15px; }
+
+.form-control-custom {
+    width: 100%;
+    height: 48px;
+    padding: 10px 15px;
+    font-size: 0.95rem;
+    border-radius: 10px;
+    border: 1px solid #ced4da;
+    transition: all 0.2s;
+}
+
+.form-control-custom:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+}
+
+.btn-submit {
+    width: 100%;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    height: 50px;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 10px;
+}
+
+.btn-submit:hover { background: var(--primary-hover); transform: translateY(-1px); }
+.btn-submit:active { transform: translateY(0); }
+
+.back-link {
+    display: block;
+    text-align: center;
+    margin-top: 20px;
+    color: #6c757d;
+    font-size: 0.85rem;
+    text-decoration: none;
+}
+
+.back-link span { color: var(--primary-color); font-weight: 600; }
+
+/* Estilo para las alertas personalizadas */
+.swal2-title-custom { font-family: 'Inter', sans-serif !important; font-weight: 700 !important; }
+
+.pin-wrapper {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 25px 0;
+}
+
+.pin-input {
+    width: 50px;
+    height: 60px;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 800;
+    border-radius: 12px;
+    border: 2px solid #ced4da;
+    transition: all 0.2s;
+}
+
+.pin-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+    outline: none;
+}
+
+.resend-text {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-top: 20px;
+}
+
+.resend-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+/* Forzamos que el modal esté oculto por defecto */
+#modalPIN {
+    display: none; 
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); /* Fondo oscuro */
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Solo se ve cuando tiene esta clase */
+#modalPIN.active {
+    display: flex !important;
+}
+
+
+   .pin-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .pin-input {
+            width: 45px;
+            height: 55px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 800;
+            border-radius: 10px;
+            border: 2px solid #ced4da;
+        }
+
+        .btn-toggle-eye {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
