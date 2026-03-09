@@ -56,63 +56,58 @@
         <p>Mostrando <strong id="count">{{mascotas.length}}</strong> mascotas</p>
     </header>
 
-<div class="product-grid" id="product-grid">
-    {{#each mascotas}}
+    <div class="product-grid" id="product-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
+        {{#each mascotas}}
+        <article class="product-card" data-title="{{this.titulo}}" data-category="{{this.cat_des}}" 
+                 style="display: flex; flex-direction: column; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background: white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); height: 100%;">
+            
+            <div class="product-image" style="width: 100%; aspect-ratio: 1/1; overflow: hidden;">
+                <img src="{{#if this.foto2}}{{this.foto2}}{{else}}/img/placeholder.jpg{{/if}}" 
+                     alt="{{this.titulo}}" 
+                     style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
 
-<article class="product-card" data-title="{{this.titulo}}" data-category="{{this.cat_des}}" style="display: flex; flex-direction: column; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background: white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); height: 100%;">
-    
-    <div class="product-image" style="width: 100%; aspect-ratio: 1/1; overflow: hidden;">
-        <img src="{{#if this.foto2}}{{this.foto2}}{{else}}/img/placeholder.jpg{{/if}}" 
-             alt="{{this.titulo}}" 
-             style="width: 100%; height: 100%; object-fit: cover;">
+            <div class="product-info" style="padding: 15px; display: flex; flex-direction: column; flex-grow: 1; gap: 8px;">
+                <span class="category-text" style="color: #2563eb; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">
+                    {{this.cat_des}}
+                </span>
+
+                <h3 style="margin: 0; color: #1e293b; font-size: 1.25rem; line-height: 1.2;">
+                    {{this.titulo}}
+                </h3>
+
+                <p style="margin: 0; font-size: 13px; color: #64748b; line-height: 1.4; flex-grow: 1;">
+                    📍 {{this.direccion}}
+                </p>
+                
+                <button type="button" class="btn-view" 
+                    onclick="mostrarPopUp(this)" 
+                    data-titulo="{{this.titulo}}"
+                    data-foto="{{#if this.foto2}}{{this.foto2}}{{else}}/img/placeholder.jpg{{/if}}"
+                    data-descripcion="{{this.des}}" 
+                    data-direccion="{{this.direccion}}" 
+                    data-lat="{{this.latitud}}"
+                    data-lng="{{this.longitud}}"
+                    data-category="{{this.cat_des}}"
+                    data-tipo="{{this.tipo}}"
+                    data-sexo="{{this.sexo}}"
+                    data-raza="{{this.raza}}"
+                    data-nota="{{this.nota}}"
+                    data-usuario="{{this.id_usuario}}"
+                    style="width: 100%; padding: 12px; background: #2563eb; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px;">
+                    Ver Datos
+                </button>
+            </div>
+        </article>
+        {{/each}}
     </div>
-
-    <div class="product-info" style="padding: 15px; display: flex; flex-direction: column; flex-grow: 1; gap: 8px;">
-        
-        <span class="category-text" style="color: #2563eb; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">
-            {{this.cat_des}}
-        </span>
-
-        <h3 style="margin: 0; color: #1e293b; font-size: 1.25rem; line-height: 1.2;">
-            {{this.titulo}}
-        </h3>
-
-        <p style="margin: 0; font-size: 13px; color: #64748b; line-height: 1.4; flex-grow: 1;">
-            📍 {{this.direccion}}
-        </p>
-        
-        <button type="button" class="btn-view" 
-            onclick="mostrarPopUp(this)" 
-            data-titulo="{{this.titulo}}"
-            data-foto="{{#if this.foto2}}{{this.foto2}}{{else}}/img/placeholder.jpg{{/if}}"
-            data-descripcion="{{this.des}}" 
-            data-direccion="{{this.direccion}}" 
-            data-lat="{{this.latitud}}"
-            data-lng="{{this.longitud}}"
-            data-category="{{this.cat_des}}"
-            data-tipo="{{this.tipo}}"
-            data-sexo="{{this.sexo}}"
-            data-raza="{{this.raza}}"
-            data-nota="{{this.nota}}"
-            data-usuario="{{this.id_usuario}}"
-            style="width: 100%; padding: 12px; background: #2563eb; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: background 0.2s;">
-            Ver Datos
-        </button>
-    </div>
-</article>
-
-    {{/each}}
-</div>
-
-
 </section>
 
 <div id="modal-mapa-general">
     <div class="modal-content-white" style="width: 95%; max-width: 1100px;">
-        <div
-            style="padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee;">
+        <div style="padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee;">
             <h3 style="margin:0;">📍 Mascotas en el mapa</h3>
-            <button onclick="cerrarMapaGeneral()"
+            <button onclick="cerrarMapaGeneral()" aria-label="Cerrar"
                 style="font-size: 30px; border: none; background: none; cursor: pointer;">&times;</button>
         </div>
         <div id="map-general"></div>
@@ -123,7 +118,8 @@
     <div class="modal-content-white" style="max-width: 500px; width: 90%;">
         <div style="position: relative;">
             <img id="pop-img" src="" style="width: 100%; height: 250px; object-fit: cover;">
-            <button onclick="cerrarPopUp()" style="position: absolute; top: 10px; right: 10px; background: white; border-radius: 50%; width: 35px; height: 35px; border: none; cursor: pointer; font-weight:bold;">&times;</button>
+            <button onclick="cerrarPopUp()" aria-label="Cerrar"
+                    style="position: absolute; top: 10px; right: 10px; background: white; border-radius: 50%; width: 35px; height: 35px; border: none; cursor: pointer; font-weight:bold;">&times;</button>
         </div>
         <div style="padding: 20px;">
             <h2 id="pop-titulo" style="margin: 0 0 10px 0;"></h2>
@@ -138,7 +134,6 @@
             <p style="font-size: 14px; margin-bottom: 5px;">
                 <strong>Contacto:</strong> <span id="pop-usuario" style="color: #2563eb; font-weight: bold;"></span>
             </p>
-
             <p id="pop-direccion" style="font-weight: bold; color: #444; font-size: 14px;"></p>
             
             <div id="pop-nota-container" style="background: #fffbeb; padding: 10px; border-radius: 8px; margin-top: 10px; display: none; border-left: 4px solid #f59e0b;">
