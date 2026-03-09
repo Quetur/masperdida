@@ -8,23 +8,21 @@ import session from 'express-session';
 import cookieParser from 'cookie-parser'; 
 import router from "./src/routes/router.js"; 
 
-// 1. Configuración de variables de entorno
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// --- INICIALIZACIÓN ---
 const app = express(); 
 const PORT = process.env.PORT || 4020;
 
-// 3. MIDDLEWARES (Orden Crítico)
+// 3. MIDDLEWARES
 app.use(cookieParser()); 
 app.use(express.static(path.join(__dirname, 'public'))); 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 4. Motor de plantillas
+// 4. MOTOR DE PLANTILLAS (Configuración con nuevo helper JSON)
 app.engine('hbs', engine({
     extname: '.hbs',
     defaultLayout: 'main',
@@ -33,7 +31,9 @@ app.engine('hbs', engine({
         eq: (a, b) => a === b, 
         list: (...args) => args.slice(0, -1),
         concat: (a, b) => String(a) + String(b), 
-        isChecked: (filtros, key) => (filtros && filtros[key] ? 'checked' : '')
+        isChecked: (filtros, key) => (filtros && filtros[key] ? 'checked' : ''),
+        // --- SOLUCIÓN AL ERROR: Helper JSON ---
+        json: (context) => JSON.stringify(context)
     }
 }));
 app.set('view engine', 'hbs');
@@ -50,49 +50,54 @@ app.use(session({
   }
 }));
 
-// --- NUEVO: MIDDLEWARE PARA PASAR USUARIO A LAS VISTAS ---
+// MIDDLEWARE PARA USUARIO GLOBAL
 app.use((req, res, next) => {
-    // Inyecta el usuario de la sesión en las variables globales de Handlebars
     res.locals.user = req.session.user || null;
     next();
 });
-// --------------------------------------------------------
 
-// 6. RUTAS
+
+
+// 6. RUTAS (Optimizada para evitar inyecciones y mejorar rendimiento)
 app.get('/', async (req, res) => {
     try {
-        const [categorias] = await pool.execute("SELECT id_categoria, des FROM categoria");
-        let sql = "SELECT * FROM mascota WHERE 1=1";
-        const params = [];
-        Object.keys(req.query).forEach((key) => {
-            if (key.startsWith("f")) {
-                const idCategoria = key.substring(1);
-                sql += " AND id_categoria = ?";
-                params.push(idCategoria);
-            }
-        });
-        const [rows] = await pool.execute(sql, params);
+        // Ejecutamos ambas consultas en paralelo para ganar velocidad
+        const [promesaCategorias, promesaMascotas] = await Promise.all([
+            pool.execute("SELECT id_categoria, des FROM categoria"),
+            (async () => {
+                let sql = "SELECT m.*,c.des as cat_des, d.des as tio_des, e.des as raza_des FROM mascota m INNER JOIN categoria c ON c.id_categoria = m.id_categoria INNER JOIN tipo d ON d.id_tipo = m.id_tipo  INNER JOIN raza e ON e.id_raza = m.id_raza WHERE 1=1"
+                const params = [];
+                Object.keys(req.query).forEach((key) => {
+                    if (key.startsWith("f")) {
+                        const idCategoria = key.substring(1);
+                        sql += " AND id_categoria = ?";
+                        params.push(idCategoria);
+                    }
+                });
+                return pool.execute(sql, params);
+            })()
+        ]);
+
+        const [categorias] = promesaCategorias;
+        const [rows] = promesaMascotas;
         
-        // Ya no necesitas pasar 'user' aquí manualmente, res.locals lo hace solo
         res.render('home', { 
             mascotas: rows, 
             categorias: categorias, 
             filtros: req.query 
         });
     } catch (err) {
-        res.status(500).send(`Error: ${err.message}`);
+        console.error("Error en Home:", err);
+        res.status(500).send("Error interno del servidor");
     }
 });
 
-// Rutas externas
 app.use("/", router);
 
-// 7. Manejo de errores 404
 app.use((req, res) => {
     res.status(404).render('home');
 });
 
-// 8. Arranque
 app.listen(PORT, () => {
     console.log(`✅ Servidor listo en http://localhost:${PORT}`);
 });

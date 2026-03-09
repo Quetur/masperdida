@@ -1,160 +1,148 @@
-/* --- CONTENEDOR PRINCIPAL --- */
-.main-content-area {
-    width: 100%;
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 30px 20px;
-    box-sizing: border-box;
+/* ==========================================
+   ESTILOS BASE (Mantenemos tu estructura)
+   ========================================== */
+.modal-overlay { 
+    display: none; 
+    position: fixed; 
+    inset: 0; 
+    background: rgba(15, 23, 42, 0.9); 
+    z-index: 10000; /* Subido para estar sobre el mapa */
+    justify-content: center; 
+    align-items: center; 
+    padding: 15px;
 }
 
-/* --- GRID DINÁMICO --- */
+.modal-overlay.active { display: flex; }
+
+.modal-detalle { 
+    flex-direction: row; 
+    display: flex; 
+    max-width: 900px; 
+    width: 95%; 
+    max-height: 90vh; 
+    overflow: hidden; 
+    border-radius: 15px; 
+    background: #fff; 
+    position: relative;
+}
+
+.pop-col-img { flex: 1; background: #f1f5f9; min-height: 300px; }
+.pop-col-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.pop-col-info { 
+    flex: 1.2; 
+    padding: 30px; 
+    overflow-y: auto; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 15px; 
+}
+
+/* Estilo para los iconos del mapa */
+.marker-img-wrap { 
+    width: 50px; 
+    height: 50px; 
+    border-radius: 50%; 
+    border: 3px solid white; 
+    overflow: hidden; 
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3); 
+}
+.marker-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Grid de escritorio */
 .product-grid {
-    display: grid !important;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)) !important;
-    gap: 25px;
-    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    padding: 20px 0;
 }
 
-/* --- TARJETA DE MASCOTA (DISEÑO PREMIUM) --- */
 .product-card {
-    background: #ffffff;
-    border-radius: 20px;
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
     overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
     display: flex;
     flex-direction: column;
-    height: 100%;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border: 1px solid #f1f5f9;
-    position: relative;
 }
 
-.product-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 12px 25px rgba(37, 99, 235, 0.1);
-    border-color: #dbeafe;
-}
-
-/* --- IMAGEN CON EFECTO ZOOM --- */
-.product-image {
-    width: 100%;
-    height: 220px;
-    position: relative;
-    overflow: hidden;
-    background-color: #f1f5f9;
-}
-
-.product-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.5s ease;
-}
-
-.product-card:hover .product-image img {
-    transform: scale(1.1);
-}
-
-/* --- CONTENEDOR DE BADGES (SEXO Y ESTADO) --- */
-.badge-container {
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    z-index: 10;
-}
-
-.product-badge {
-    font-size: 10px;
-    font-weight: 800;
-    padding: 5px 12px;
-    border-radius: 30px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-/* Colores dinámicos para Sexo y Estado */
-.badge-macho { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
-.badge-hembra { background: #fce7f3; color: #9d174d; border: 1px solid #fbcfe8; }
-.badge-estado { background: rgba(15, 23, 42, 0.8); color: white; backdrop-filter: blur(4px); }
-
-/* --- CONTENIDO DE LA TARJETA --- */
-.product-info {
-    padding: 18px;
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-}
-
-.product-info h3 {
-    font-size: 1.15rem;
-    font-weight: 800;
-    color: #0f172a;
-    margin: 0 0 10px 0;
-    line-height: 1.2;
-}
-
-.description {
-    font-size: 0.85rem;
-    color: #64748b;
-    margin-bottom: 20px;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3; /* Para navegadores antiguos */
-    line-clamp: 3;         /* PROPIEDAD ESTÁNDAR (Soluciona error VS Code) */
-    overflow: hidden;
-    line-height: 1.6;
-}
-
-/* --- FOOTER DE LA TARJETA --- */
-.product-footer {
-    margin-top: auto;
-    padding: 0 18px 18px 18px;
-}
-
-.location-info {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.8rem;
-    color: #94a3b8;
-    margin-bottom: 15px;
-    font-weight: 600;
-}
-
-/* --- BOTÓN VER MÁS --- */
-.btn-view {
-    width: 100%;
-    padding: 14px;
-    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-    color: white !important;
-    border: none;
-    border-radius: 14px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    font-weight: 700;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    transition: all 0.3s;
-    text-decoration: none;
-    box-sizing: border-box;
-}
-
-.btn-view:hover {
-    filter: brightness(1.1);
-    box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3);
-}
-
-/* --- ADAPTACIÓN MÓVIL --- */
-@media (max-width: 640px) {
+/* ==========================================
+   OPTIMIZACIÓN MÓVIL (Lista Compacta)
+   ========================================== */
+@media (max-width: 600px) {
+    /* 1. Listado modo lista horizontal */
     .product-grid {
-        grid-template-columns: 1fr !important;
-        gap: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
     }
-    .product-image { height: 250px; }
+
+    .product-card {
+        flex-direction: row !important;
+        height: 100px;
+        padding: 8px;
+        gap: 12px;
+    }
+
+    .product-image {
+        width: 85px !important;
+        height: 85px !important;
+        min-width: 85px;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .product-info {
+        padding: 0 !important;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        flex: 1;
+    }
+
+    .product-info h3 {
+        font-size: 15px !important;
+        margin: 0 !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Ocultamos extras para limpiar la vista */
+    .description, .location-info { display: none !important; }
+
+    .product-footer {
+        padding: 0 !important;
+        border: none !important;
+        margin-top: 5px;
+    }
+
+    .btn-view {
+        padding: 4px 10px !important;
+        font-size: 12px !important;
+        background: #2563eb !important;
+        color: #fff !important;
+    }
+
+    /* 2. Modal Detalle en móvil (Vertical) */
+    .modal-detalle {
+        flex-direction: column;
+        width: 100%;
+        max-height: 95vh;
+    }
+
+    .pop-col-img {
+        height: 200px;
+        min-height: 200px;
+        flex: none;
+    }
+
+    .pop-col-info {
+        padding: 20px;
+        flex: 1;
+    }
+
+    .pop-col-info h2 { font-size: 22px !important; }
 }
+
+.hidden { display: none !important; }
