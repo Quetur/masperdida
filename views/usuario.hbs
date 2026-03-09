@@ -1,175 +1,362 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>{{title}}</title>
 
-    <!-- CARGA DE LIBRERÍAS (URLs Actualizadas y Seguras) -->
-    <link href="https://cdn.jsdelivr.net" rel="stylesheet">
-    <link href="https://fonts.googleapis.com" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="/css/usuario.css">
 
-    <script src="https://cdn.jsdelivr.net"></script>
-    <script src="https://cdn.jsdelivr.net"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
+        /* Optimización de estilos del Modal */
         #modalPIN {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7); z-index: 9999; align-items: center; justify-content: center;
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
         }
-        #modalPIN.active { display: flex; }
-        .pin-container { display: flex; justify-content: center; gap: 10px; margin: 20px 0; }
-        .pin-in { width: 45px; height: 60px; text-align: center; font-size: 1.5rem; font-weight: 800; border-radius: 12px; border: 2px solid #ced4da; }
-        .btn-toggle-eye { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 1.2rem; }
-        .btn-close-custom { position: absolute; top: 15px; right: 20px; border: none; background: none; font-size: 1.5rem; color: #6c757d; cursor: pointer; }
+
+        #modalPIN.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .pin-container {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin: 25px 0;
+        }
+
+        .pin-in {
+            width: 50px;
+            height: 65px;
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 800;
+            border-radius: 12px;
+            border: 2px solid #dee2e6;
+            background: #f8f9fa;
+            transition: all 0.2s;
+        }
+
+        .pin-in:focus {
+            border-color: #0d6efd;
+            background: white;
+            outline: none;
+            box-shadow: 0 0 8px rgba(13, 110, 253, 0.2);
+        }
+
+        .btn-toggle-eye {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            opacity: 0.6;
+        }
+
+        .btn-toggle-eye:hover {
+            opacity: 1;
+        }
+
+        .btn-close-custom {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            border: none;
+            background: none;
+            font-size: 1.8rem;
+            color: #adb5bd;
+            cursor: pointer;
+        }
     </style>
 </head>
+
 <body>
 
     <div class="register-card">
-        <div class="brand-header">
-            <h1>Mascota Perdida</h1>
-            <div class="divider"></div>
-            <p>Crear Nueva Cuenta</p>
+        <div class="brand-header text-center mb-4">
+            <h1 class="display-6 fw-bold text-primary">Mascota Perdida</h1>
+            <div class="divider mx-auto" style="width: 50px; height: 3px; background: #0d6efd; margin: 10px 0;"></div>
+            <p class="text-muted">Crear Nueva Cuenta</p>
         </div>
 
         <form id="formRegistro" method="POST" action="/registrar">
-            <label class="form-label">NOMBRE COMPLETO</label>
-            <div class="input-wrapper">
-                <input type="text" name="nombre" id="nombre" class="form-control-custom" placeholder="Ej: Juan Pérez" required>
+            <div class="mb-3">
+                <label class="form-label small fw-bold text-uppercase">Nombre Completo</label>
+                <input type="text" name="nombre" id="nombre" class="form-control form-control-lg"
+                    placeholder="Ej: Juan Pérez" required>
             </div>
 
-            <label class="form-label">NÚMERO DE CELULAR (ID)</label>
-            <div class="input-wrapper">
-                <input type="tel" id="celular_mask" class="form-control-custom" placeholder="(XX) XXXX-XXXX" maxlength="15" required>
+            <div class="mb-4">
+                <label class="form-label small fw-bold text-uppercase text-secondary">¿Cómo prefieres que te
+                    contacten?</label>
+                <div class="d-flex gap-3 mt-2">
+                    <div class="flex-fill">
+                        <input type="radio" name="contacto_pref" value="whatsapp" class="btn-check" id="opt_ws" checked>
+                        <label
+                            class="btn btn-outline-success w-100 d-flex align-items-center justify-content-center gap-2 py-3 shadow-sm"
+                            for="opt_ws">
+                            <i class="fab fa-whatsapp fa-lg"></i> <b>WhatsApp</b>
+                        </label>
+                    </div>
+
+                    <div class="flex-fill">
+                        <input type="radio" name="contacto_pref" value="email" class="btn-check" id="opt_email">
+                        <label
+                            class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center gap-2 py-3 shadow-sm"
+                            for="opt_email">
+                            <i class="fas fa-envelope fa-lg"></i> <b>Email</b>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div id="wrapper_celular" class="mb-3">
+                <label class="form-label small fw-bold text-uppercase">Número de Celular (WhatsApp)</label>
+                <input type="tel" id="celular_mask" class="form-control form-control-lg" placeholder="(XX) XXXX-XXXX"
+                    maxlength="15">
                 <input type="hidden" name="celular" id="celular_final">
             </div>
 
-            <label class="form-label">CORREO ELECTRÓNICO</label>
-            <div class="input-wrapper">
-                <input type="email" name="email" id="email" class="form-control-custom" placeholder="usuario@email.com">
+            <div id="wrapper_email" class="mb-3" style="display: none;">
+                <label class="form-label small fw-bold text-uppercase">Correo Electrónico</label>
+                <input type="email" name="email" id="email" class="form-control form-control-lg"
+                    placeholder="usuario@email.com">
             </div>
 
-            <label class="form-label">CONTRASEÑA</label>
-            <div class="input-wrapper">
-                <input type="password" name="pass" id="pass" class="form-control-custom" placeholder="Crea tu clave segura" required>
-                <button type="button" id="btn-toggle" class="btn-toggle-eye">👁️</button>
+            <div class="mb-4">
+                <label class="form-label small fw-bold text-uppercase">Contraseña</label>
+                <div class="position-relative">
+                    <input type="password" name="pass" id="pass" class="form-control form-control-lg"
+                        placeholder="Mínimo 6 caracteres" required>
+                    <button type="button" id="btn-toggle" class="btn-toggle-eye">👁️</button>
+                </div>
             </div>
 
-            <button type="button" onclick="validarRegistro()" class="btn-submit" id="btn-registrar">REGISTRARME AHORA</button>
+            <button type="button" onclick="validarRegistro()" class="btn btn-primary btn-lg w-100 fw-bold"
+                id="btn-registrar">
+                REGISTRARME AHORA
+            </button>
         </form>
     </div>
 
-    <!-- MODAL PIN PERSONALIZADO -->
     <div id="modalPIN">
-        <div class="modal-content" style="max-width: 400px; border-radius: 25px; background: white; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); position: relative;">
-            
+        <div class="modal-content border-0 shadow-lg"
+            style="max-width: 380px; border-radius: 25px; background: white; padding: 30px; position: relative;">
+
             <button type="button" onclick="cerrarModal()" class="btn-close-custom">&times;</button>
 
             <div class="text-center">
-                <h2 class="fw-bold" style="color: #0d6efd;">🐾 Verifica tu celular</h2>
-                <p class="text-muted small">Ingresa el PIN enviado al:<br><strong id="txt_celular"></strong></p>
-                
+                <h3 class="fw-bold text-dark">🐾 Verifica tu celular</h3>
+                <p class="text-muted small">Ingresa el código enviado al:<br><span id="txt_celular"
+                        class="fw-bold text-primary"></span></p>
+
                 <div class="mb-3">
-                    <span class="badge bg-light text-danger border">Intentos restantes: <span id="contador_visual">5</span></span>
+                    <span class="badge rounded-pill bg-light text-danger border px-3 py-2">
+                        Intentos restantes: <span id="contador_visual">5</span>
+                    </span>
                 </div>
 
                 <form id="formVerificar" method="POST" action="/verificar-codigo">
                     <input type="hidden" name="celular" id="pin_celular_hidden">
-                    <input type="hidden" name="intentos" id="intentos_hidden" value="{{#if intentos}}{{intentos}}{{else}}5{{/if}}">
-                    
+                    <input type="hidden" name="intentos" id="intentos_hidden">
+
                     <div class="pin-container">
-                        <input type="text" class="pin-in" maxlength="1" inputmode="numeric" required>
-                        <input type="text" class="pin-in" maxlength="1" inputmode="numeric" required>
-                        <input type="text" class="pin-in" maxlength="1" inputmode="numeric" required>
-                        <input type="text" class="pin-in" maxlength="1" inputmode="numeric" required>
+                        <input type="text" class="pin-in" maxlength="1" inputmode="numeric" pattern="[0-9]*"
+                            autocomplete="one-time-code" required>
+                        <input type="text" class="pin-in" maxlength="1" inputmode="numeric" pattern="[0-9]*" required>
+                        <input type="text" class="pin-in" maxlength="1" inputmode="numeric" pattern="[0-9]*" required>
+                        <input type="text" class="pin-in" maxlength="1" inputmode="numeric" pattern="[0-9]*" required>
                     </div>
                     <input type="hidden" name="codigo" id="pin_completo">
-                    <button type="button" onclick="enviarPin()" class="btn-submit w-100" id="btn-verificar">VERIFICAR</button>
+                    <button type="button" onclick="enviarPin()" class="btn btn-primary btn-lg w-100 fw-bold"
+                        id="btn-verificar">
+                        VERIFICAR PIN
+                    </button>
                 </form>
             </div>
         </div>
     </div>
 
-    <script>
-        // --- 1. MÁSCARA CELULAR (JS PURO) ---
-        const mask = document.getElementById('celular_mask');
-        const final = document.getElementById('celular_final');
+<script>
+    // --- ELEMENTOS PARA INTERCAMBIO DE INPUTS ---
+    const radioWs = document.getElementById('opt_ws');
+    const radioEmail = document.getElementById('opt_email');
+    const wrapCelular = document.getElementById('wrapper_celular');
+    const wrapEmail = document.getElementById('wrapper_email');
+    
+    // Inputs de carga
+    const mask = document.getElementById('celular_mask');
+    const final = document.getElementById('celular_final');
+    const inputEmail = document.getElementById('email');
 
-        mask.addEventListener('input', (e) => {
-            let v = e.target.value.replace(/\D/g, "");
-            let f = "";
-            if (v.length > 0) {
-                f = "(" + v.substring(0, 2);
-                if (v.length > 2) f += ") " + v.substring(2, 6);
-                if (v.length > 6) f += "-" + v.substring(6, 10);
+    // --- 1. LÓGICA DE VISIBILIDAD DE CAMPOS ---
+    function actualizarCampos() {
+        if (radioWs && radioWs.checked) {
+            wrapCelular.style.display = 'block';
+            wrapEmail.style.display = 'none';
+            // Si eligen WhatsApp, el email no es obligatorio para el navegador
+            inputEmail.value = ""; 
+        } else if (radioEmail && radioEmail.checked) {
+            wrapCelular.style.display = 'none';
+            wrapEmail.style.display = 'block';
+            // Si eligen Email, limpiamos el celular
+            mask.value = "";
+            final.value = "";
+        }
+    }
+
+    // Eventos para los radios
+    if(radioWs) radioWs.addEventListener('change', actualizarCampos);
+    if(radioEmail) radioEmail.addEventListener('change', actualizarCampos);
+
+    // --- 2. MÁSCARA CELULAR ---
+    mask.addEventListener('input', (e) => {
+        let v = e.target.value.replace(/\D/g, "");
+        let f = "";
+        if (v.length > 0) {
+            f = "(" + v.substring(0, 2);
+            if (v.length > 2) f += ") " + v.substring(2, 6);
+            if (v.length > 6) f += "-" + v.substring(6, 10);
+        }
+        e.target.value = f;
+        final.value = v;
+    });
+
+    // --- 3. PASSWORD TOGGLE ---
+    document.getElementById('btn-toggle').addEventListener('click', function () {
+        const p = document.getElementById('pass');
+        p.type = p.type === 'password' ? 'text' : 'password';
+        this.innerText = p.type === 'password' ? '👁️' : '🙈';
+    });
+
+    // --- 4. LÓGICA PIN MEJORADA ---
+    const pins = document.querySelectorAll('.pin-in');
+    pins.forEach((input, idx) => {
+        input.addEventListener('input', (e) => {
+            e.target.value = e.target.value.replace(/[^0-9]/g, '');
+            if (e.target.value && idx < pins.length - 1) {
+                pins[idx + 1].focus();
             }
-            e.target.value = f;
-            final.value = v;
+            let res = "";
+            pins.forEach(i => res += i.value);
+            document.getElementById('pin_completo').value = res;
         });
 
-        // --- 2. OJITO PASSWORD (JS PURO) ---
-        document.getElementById('btn-toggle').addEventListener('click', function () {
-            const p = document.getElementById('pass');
-            p.type = p.type === 'password' ? 'text' : 'password';
-            this.innerText = p.type === 'password' ? '👁️' : '🙈';
-        });
-
-        // --- 3. LÓGICA DEL PIN (JS PURO) ---
-        const pins = document.querySelectorAll('.pin-in');
-        pins.forEach((input, idx) => {
-            input.addEventListener('input', (e) => {
-                if (e.target.value && idx < 3) pins[idx + 1].focus();
-                let res = "";
-                pins.forEach(i => res += i.value);
-                document.getElementById('pin_completo').value = res;
-            });
-            input.addEventListener('keydown', (e) => {
-                if (e.key === "Backspace" && !e.target.value && idx > 0) pins[idx - 1].focus();
-            });
-        });
-
-        // --- 4. CONTROL DEL MODAL ---
-        window.onload = () => {
-            const debeMostrar = "{{showModal}}";
-            if (debeMostrar === "true") {
-                const num = "{{celular}}";
-                const intentosActuales = "{{intentos}}" || "5";
-
-                document.getElementById('txt_celular').innerText = `(${num.substring(0,2)}) ${num.substring(2,6)}-${num.substring(6,10)}`;
-                document.getElementById('pin_celular_hidden').value = num;
-                document.getElementById('contador_visual').innerText = intentosActuales;
-                document.getElementById('intentos_hidden').value = intentosActuales;
-
-                document.getElementById('modalPIN').classList.add('active');
-
-                {{#if error_pin}}
-                    Swal.fire({ icon: 'error', title: 'PIN Incorrecto', text: 'Te quedan ' + intentosActuales + ' intentos.', confirmButtonColor: '#0d6efd' });
-                {{/if}}
+        input.addEventListener('keydown', (e) => {
+            if (e.key === "Backspace" && !e.target.value && idx > 0) {
+                pins[idx - 1].focus();
             }
-        };
+        });
+    });
 
-        function cerrarModal() {
-            document.getElementById('modalPIN').classList.remove('active');
-            document.getElementById('btn-registrar').disabled = false;
-            document.getElementById('btn-registrar').innerHTML = 'REGISTRARME AHORA';
+    // --- 5. GESTIÓN DEL MODAL ---
+    window.onload = () => {
+        actualizarCampos(); // Inicializar vista según radio seleccionado
+        
+        const debeMostrar = "{{showModal}}";
+        if (debeMostrar === "true") {
+            const num = "{{celular}}";
+            const intentosActuales = "{{intentos}}" || "5";
+
+            if (num && num.length >= 10) {
+                document.getElementById('txt_celular').innerText = `(${num.substring(0, 2)}) ${num.substring(2, 6)}-${num.substring(6, 10)}`;
+            }
+
+            document.getElementById('pin_celular_hidden').value = num;
+            document.getElementById('contador_visual').innerText = intentosActuales;
+            document.getElementById('intentos_hidden').value = intentosActuales;
+
+            document.getElementById('modalPIN').classList.add('active');
+            if(pins[0]) pins[0].focus();
+
+            {{#if error_pin}}
+                Swal.fire({ icon: 'error', title: 'PIN Incorrecto', text: 'Te quedan ' + intentosActuales + ' intentos.', confirmButtonColor: '#0d6efd' });
+            {{/if}}
+        }
+    };
+
+    // --- 6. VALIDACIÓN DE REGISTRO OPTIMIZADA ---
+    function validarRegistro() {
+        const nombre = document.getElementById('nombre').value;
+        const pass = document.getElementById('pass').value;
+
+        // Validar nombre
+        if (nombre.length < 3) {
+            Swal.fire({ icon: 'error', title: 'Nombre muy corto' });
+            return;
         }
 
-        function validarRegistro() {
+        // Validar según opción de contacto
+        if (radioWs.checked) {
             if (final.value.length < 10) {
-                Swal.fire({ icon: 'warning', title: 'Celular incompleto' });
+                Swal.fire({ icon: 'warning', title: 'Celular inválido', text: 'Ingresa tu número de WhatsApp completo.' });
                 return;
             }
-            document.getElementById('btn-registrar').disabled = true;
-            document.getElementById('formRegistro').submit();
+        } else {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(inputEmail.value)) {
+                Swal.fire({ icon: 'warning', title: 'Email inválido', text: 'Ingresa un correo electrónico real.' });
+                return;
+            }
         }
 
-        function enviarPin() {
-            if (document.getElementById('pin_completo').value.length < 4) return;
-            document.getElementById('btn-verificar').disabled = true;
-            document.getElementById('formVerificar').submit();
+        // Validar contraseña
+        if (pass.length < 6) {
+            Swal.fire({ icon: 'warning', title: 'Contraseña débil', text: 'Usa al menos 6 caracteres.' });
+            return;
         }
-    </script>
+
+        const btn = document.getElementById('btn-registrar');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Procesando...';
+        document.getElementById('formRegistro').submit();
+    }
+
+    function enviarPin() {
+        const pinCompleto = document.getElementById('pin_completo').value;
+        if (pinCompleto.length < 4) {
+            Swal.fire({ icon: 'info', title: 'Falta información', text: 'Completa los 4 dígitos del PIN' });
+            return;
+        }
+        document.getElementById('btn-verificar').disabled = true;
+        document.getElementById('formVerificar').submit();
+    }
+
+    function cerrarModal() {
+        document.getElementById('modalPIN').classList.remove('active');
+        const btnReg = document.getElementById('btn-registrar');
+        btnReg.disabled = false;
+        btnReg.innerHTML = 'REGISTRARME AHORA';
+    }
+</script>
+
 </body>
+
 </html>

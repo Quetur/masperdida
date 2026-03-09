@@ -9,7 +9,7 @@ let cachedCards = null; // Memoria para el buscador rápido
 // --- POPUP INDIVIDUAL ---
 function mostrarPopUp(btn) {
     const d = btn.dataset; 
-    
+    console.log("d", d)
     // Inyectar datos al modal de detalle
     document.getElementById('pop-titulo').innerText = d.titulo;
     document.getElementById('pop-img').src = d.foto || '/img/placeholder.jpg';
@@ -18,7 +18,7 @@ function mostrarPopUp(btn) {
     document.getElementById('pop-sexo').innerText = d.sexo || 'No especificado';
     document.getElementById('pop-raza').innerText = d.raza || 'No especificada';
     document.getElementById('pop-descripcion').innerText = d.descripcion;
-    document.getElementById('pop-direccion').innerHTML = "📍 " + d.direccion;
+    document.getElementById('pop-direccion').innerHTML = "📱 " + formatPhone(d.usuario);
 
     const notaCont = document.getElementById('pop-nota-container');
     if (d.nota && d.nota !== 'undefined') {
@@ -141,3 +141,19 @@ document.getElementById('search-input')?.addEventListener('input', function (e) 
 
     document.getElementById('count').innerText = count;
 });
+
+// Función para dar formato (xx) XXXX - XXXX
+function formatPhone(number) {
+    if (!number) return '';
+    // Limpiamos cualquier carácter que no sea número
+    const cleaned = ('' + number).replace(/\D/g, '');
+    
+    // Verificamos si tiene el largo esperado (ej. 10 dígitos para Argentina)
+    const match = cleaned.match(/^(\d{2})(\d{4})(\d{4})$/);
+    
+    if (match) {
+        return `(${match[1]}) ${match[2]} - ${match[3]}`;
+    }
+    
+    return number; // Si no coincide el formato, devuelve el original
+}

@@ -143,6 +143,27 @@ router.post("/login", async (req, res, next) => {
 });
 
 
+router.get("/logout", (req, res) => {
+    // 1. Eliminar la cookie del token JWT
+    res.clearCookie('token_acceso', { path: '/' });
+
+    // 2. Destruir la sesión del servidor
+    if (req.session) {
+        req.session.destroy((err) => {
+            if (err) {
+                console.error("Error al destruir la sesión:", err);
+                return res.redirect("/"); // O manejar el error
+            }
+            
+            // 3. Redirigir al login con un mensaje de éxito (opcional)
+            // Usamos redirect directamente o renderizamos una alerta final
+            res.redirect("/"); 
+        });
+    } else {
+        res.redirect("/");
+    }
+});
+
 
 //    listado decarrito de compras
 router.get("/carritobarra", async (req, res) => {
@@ -163,7 +184,7 @@ router.get("/mascotacambia", isAuthenticated, async (req, res) => {
   const [data] = await pool.query(
     "SELECT *, c.des as cat_des, mascota.des as prod_des  FROM mascota INNER JOIN categoria c ON c.id_categoria = mascota.id_categoria ORDER BY mascota.id_categoria,mascota.id_raza,mascota.orden"
   );
-  //console.log({ data });
+  console.log("mascotas router", [data]);
   res.render("mascotacambia", { data,
     title: "Administrar mascotas",
     hideSidebar: true, // <--- Esta variable controla la visibilidad

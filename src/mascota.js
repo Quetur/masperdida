@@ -227,6 +227,7 @@ router.post(
         "WHERE m.id_usuario = ? ORDER BY m.id_mascota DESC",
         [id_final]
       );
+      console.log("mascotas", data)
 
       res.render("mascotacambia", {
         data,
