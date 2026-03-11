@@ -11,7 +11,7 @@ import { error } from "console";
 import { isAuthenticated } from '../authenticated.js'; 
 import mascotaRoutes from "../mascota.js"; 
 import categoriaRoutes from "../categoria.js"; 
-import usuario from "../usuario.js";
+import usuario from "../usuarioRoute.js";
 
 router.use("/", mascotaRoutes); 
 router.use("/", categoriaRoutes);
@@ -483,7 +483,7 @@ async function enviarWhatsapp(mensaje, telefono, idbasededatos) {
       // CORRECCIÓN: Paréntesis añadidos y uso de resultUpdate.affectedRows
       if (resultUpdate.affectedRows > 0) {
         console.log(
-          "✅ Base de datos actualizada correctamente para ID:",
+          "✅ Base de datos router actualizada correctamente para ID:",
           idbasededatos
         );
       } else {
@@ -500,6 +500,8 @@ async function enviarWhatsapp(mensaje, telefono, idbasededatos) {
     console.error("❌ Error de red o servidor apagado:", error);
   }
 }
+
+
 
 async function Actuali_Cliente(
   telefono,

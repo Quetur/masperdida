@@ -74,7 +74,7 @@ async function enviarWhatsapp(mensaje, telefono, idbasededatos) {
       // CORRECCIÓN: Paréntesis añadidos y uso de resultUpdate.affectedRows
       if (resultUpdate.affectedRows > 0) {
         console.log(
-          "✅ Base de datos actualizada correctamente para ID:",
+          "✅ Base de datos what actualizada correctamente para ID:",
           idbasededatos
         );
       } else {
