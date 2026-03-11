@@ -1,111 +1,300 @@
+/* =========================================
+   VARIABLES Y CONFIGURACIÓN BASE
+   ========================================= */
 :root {
     --primary-color: #0d6efd;
     --primary-hover: #0b5ed7;
     --bg-gradient: linear-gradient(135deg, #f0f8ff 0%, #e6f2ff 100%);
     --white: #ffffff;
-    --input-bg: #e3f2fd;
+    --input-bg: #f8fafc;
     --ws-bg: #dcf8c6;
-    --ws-bg-active: #c5e1a5;
     --ws-border: #25d366;
     --email-bg: #fff9c4;
-    --email-bg-active: #f9f0a3;
     --email-border: #fbc02d;
-    --gray-text: #6c757d;
-    --dark-text: #495057;
-    --border-color: #ced4da;
-    --error-color: #dc3545;
-    --transition: all 0.2s ease-in-out;
+    --gray-text: #64748b;
+    --dark-text: #1e293b;
+    --border-color: #e2e8f0;
+    --error-red: #ef4444;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
 body {
     font-family: 'Inter', sans-serif;
     background: var(--bg-gradient);
-    min-height: 100vh; margin: 0; display: flex;
-    align-items: center; justify-content: center; padding: 20px;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
 }
 
+/* =========================================
+   CONTENEDOR PRINCIPAL (CARD)
+   ========================================= */
 .register-card {
     background: var(--white);
-    width: 100%; max-width: 500px;
-    padding: 40px 30px; border-radius: 20px;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
-    box-sizing: border-box;
+    width: 100%;
+    max-width: 450px;
+    padding: 40px;
+    border-radius: 24px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
 }
 
-.brand-header { text-align: center; margin-bottom: 30px; }
-.brand-header h1 { color: #2c3e50; font-weight: 800; font-size: 1.8rem; margin: 0; }
-.brand-header h1 span { color: var(--primary-color); }
-.brand-header .divider { width: 60px; height: 4px; background: var(--primary-color); margin: 10px auto; border-radius: 2px; }
-.brand-header p { color: var(--gray-text); font-size: 0.8rem; font-weight: 700; text-transform: uppercase; }
+.brand-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
 
-.input-wrapper { position: relative; margin-bottom: 20px; width: 100%; }
-.form-label { font-size: 0.75rem; font-weight: 700; color: var(--dark-text); margin-bottom: 6px; display: block; }
+.brand-header h1 {
+    font-size: 1.8rem;
+    color: var(--dark-text);
+    font-weight: 800;
+}
+
+.brand-header h1 span {
+    color: var(--primary-color);
+}
+
+.brand-header .divider {
+    width: 40px;
+    height: 4px;
+    background: var(--primary-color);
+    margin: 12px auto;
+    border-radius: 10px;
+}
+
+.brand-header p {
+    color: var(--gray-text);
+    font-size: 0.9rem;
+}
+
+/* =========================================
+   FORMULARIO E INPUTS
+   ========================================= */
+.input-wrapper {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--dark-text);
+}
 
 .form-control-custom {
-    width: 100%; height: 50px; padding: 10px 18px;
-    font-size: 1rem; border-radius: 12px; border: 1px solid var(--border-color);
-    background-color: var(--input-bg); transition: var(--transition); box-sizing: border-box;
+    width: 100%;
+    height: 52px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 2px solid var(--border-color);
+    background: var(--input-bg);
+    font-size: 1rem;
+    transition: all 0.2s ease;
 }
+
 .form-control-custom:focus {
-    outline: none; border-color: var(--primary-color); background-color: #fff;
+    outline: none;
+    border-color: var(--primary-color);
+    background: var(--white);
     box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1);
 }
-.form-control-custom:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.form-control-custom:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* =========================================
+   SELECTOR DE CONTACTO (RADIO BUTTONS)
+   ========================================= */
+.contact-selector {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.contact-btn {
+    flex: 1;
+    padding: 12px;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    cursor: pointer;
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s;
+    background: var(--white);
+}
+
+#opt_ws:checked + label {
+    background: var(--ws-bg);
+    border-color: var(--ws-border);
+}
+
+#opt_email:checked + label {
+    background: var(--email-bg);
+    border-color: var(--email-border);
+}
+
+/* =========================================
+   PASSWORD CON OJO CENTRADO
+   ========================================= */
+.password-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+#pass {
+    padding-right: 48px; /* Espacio para que el texto no tape el ojo */
+}
 
 .btn-toggle-eye {
-    position: absolute; right: 5px; top: 0; height: 50px; width: 50px;
-    background: none; border: none; cursor: pointer; font-size: 1.2rem;
-    display: flex; align-items: center; justify-content: center; z-index: 10;
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%); /* Centrado vertical perfecto */
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gray-text);
+    z-index: 5;
+    transition: color 0.2s;
 }
 
-/* Contact Selector */
-.contact-selector { display: flex; gap: 15px; margin-top: 10px; }
-.contact-btn {
-    flex: 1; display: flex; align-items: center; justify-content: center;
-    padding: 14px; border: 2px solid transparent; border-radius: 12px;
-    cursor: pointer; font-weight: 700; transition: var(--transition);
+.btn-toggle-eye:hover {
+    color: var(--primary-color);
 }
 
-#opt_ws + .contact-btn { background-color: var(--ws-bg); color: #1b5e20; }
-#opt_ws:checked + .contact-btn { border-color: var(--ws-border); box-shadow: 0 4px 12px rgba(37, 211, 102, 0.2); }
-
-#opt_email + .contact-btn { background-color: var(--email-bg); color: #f57f17; }
-#opt_email:checked + .contact-btn { border-color: var(--email-border); box-shadow: 0 4px 12px rgba(251, 192, 45, 0.2); }
-
+/* =========================================
+   BOTONES
+   ========================================= */
 .btn-submit {
-    width: 100%; background: var(--primary-color); color: white; border: none;
-    height: 55px; border-radius: 14px; font-size: 1.05rem; font-weight: 700;
-    cursor: pointer; transition: var(--transition); margin-top: 20px;
+    width: 100%;
+    height: 55px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    margin-top: 10px;
 }
-.btn-submit:disabled { background: var(--gray-text); cursor: not-allowed; }
 
-/* MODAL PIN */
-.modal-overlay {
-    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(44, 62, 80, 0.8); backdrop-filter: blur(5px); z-index: 9999;
-    align-items: center; justify-content: center;
+.btn-submit:hover:not(:disabled) {
+    background: var(--primary-hover);
 }
-.modal-overlay.active { display: flex; }
+
+.btn-submit:active:not(:disabled) {
+    transform: scale(0.98);
+}
+
+.btn-submit:disabled {
+    background: #cbd5e1;
+    cursor: not-allowed;
+}
+
+/* =========================================
+   MODAL DE PIN
+   ========================================= */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(8px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-overlay.active {
+    display: flex;
+}
 
 .modal-content {
-    background: var(--white); padding: 40px; border-radius: 25px;
-    width: 90%; max-width: 400px; text-align: center;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+    background: var(--white);
+    padding: 35px;
+    border-radius: 28px;
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.pin-container { display: flex; gap: 12px; justify-content: center; margin: 25px 0; }
+@keyframes modalIn {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.pin-container {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin: 25px 0;
+}
+
 .pin-in {
-    width: 55px; height: 65px; text-align: center; font-size: 1.8rem; font-weight: 800;
-    border-radius: 12px; border: 2px solid var(--border-color); background: var(--input-bg);
+    width: 50px;
+    height: 60px;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 800;
+    border-radius: 12px;
+    border: 2px solid var(--border-color);
+    background: var(--input-bg);
+    transition: all 0.2s;
 }
-.pin-in:focus { border-color: var(--primary-color); outline: none; background: #fff; }
 
-.error-text { color: var(--error-color); font-weight: 700; display: block; margin-bottom: 10px; }
-.attempts-text { color: var(--dark-text); font-size: 0.9rem; }
-#contador_visual { color: var(--error-color); font-weight: 800; }
+.pin-in:focus {
+    border-color: var(--primary-color);
+    background: white;
+    outline: none;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(13, 110, 253, 0.1);
+}
+
+.attempts-text {
+    font-size: 0.85rem;
+    color: var(--gray-text);
+    margin-bottom: 20px;
+}
+
+#contador_visual {
+    color: var(--error-red);
+    font-weight: 700;
+}
 
 .btn-verify {
-    width: 100%; height: 50px; background: var(--primary-color); color: white;
-    border: none; border-radius: 12px; font-weight: 700; cursor: pointer;
+    width: 100%;
+    height: 50px;
+    background: var(--dark-text);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 10px;
 }
-.btn-close { background: none; border: none; color: var(--gray-text); margin-top: 15px; cursor: pointer; }
+
+.btn-close {
+    background: none;
+    border: none;
+    color: var(--gray-text);
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-decoration: underline;
+}

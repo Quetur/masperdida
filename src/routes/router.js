@@ -35,111 +35,122 @@ console.log("transporter", transporter);
 // ingreso
 router.get("/signin", (req, res) => {
   console.log("get signin");
-  res.render("auth/signin", {
+  res.render("signin", {
     title: "Acceso - Tienda ES6",
     hideSidebar: true, // <--- Esta variable controla la visibilidad
   });
 });
 
 router.post("/login", async (req, res, next) => {
-  // 1. Cambiamos 'dni' por 'celular' (que es lo que envía el nuevo form)
-  const { celular, pass } = req.body;
-  
-  // Limpiamos el celular por si el form lo envía con formato (XX) XXXX-XXXX
-  const celularLimpio = celular ? celular.replace(/\D/g, '') : '';
-  
-  console.log("Intento de login - ID (Celular):", celularLimpio);
+    const { celular, pass } = req.body; // 'celular' es el name que viene del form
+    
+    // --- SOLUCIÓN AL EMAIL ---
+    // Si contiene una '@', es un email (no limpiamos nada). 
+    // Si NO tiene '@', es un celular y ahí sí limpiamos los caracteres no numéricos.
+    const esEmail = celular && celular.includes("@");
+    const loginID = esEmail ? celular.toLowerCase().trim() : celular.replace(/\D/g, '');
+    
+    console.log("Intento de login - ID detectado:", loginID);
 
-  if (!celularLimpio || !pass) {
-    return res.render("auth/signin", {
-      alert: true,
-      alertTitle: "Advertencia",
-      alertMessage: "Ingrese su celular y contraseña",
-      alertIcon: "info",
-      showConfirmButton: true,
-      timer: false,
-      ruta: "",
-    });
-  }
-
-  try {
-    // 2. Consulta a la nueva tabla 'users' usando el 'id' (celular)
-    const [results] = await pool.query("SELECT * FROM users WHERE id = ?", [celularLimpio]);
-    const user = results[0];
-    console.log("Usuario encontrado en DB:", user ? user.username : "No encontrado");
-    // 3. Verificación de existencia y password encriptado
-    // Nota: cambié user.pass por user.password y bcryptjs por el que uses
-    if (!user || !(await bcryptjs.compare(pass, user.password))) {
-      return res.render("auth/signin", {
-        alert: true,
-        alertTitle: "Error",
-        alertMessage: "Celular o password incorrectos",
-        alertIcon: "error",
-        showConfirmButton: true,
-        timer: 5000,
-        ruta: "auth/signin",
-      });
-    }
-
-    // --- NUEVO: Validar que el usuario esté verificado ---
-    if (user.estado !== 'verificado') {
-        return res.render("auth/signin", {
-          alert: true,
-          alertTitle: "Cuenta Pendiente",
-          alertMessage: "Debes verificar tu celular con el PIN antes de entrar.",
-          alertIcon: "warning",
-          showConfirmButton: true,
-          timer: 10000,
-          ruta: "auth/signin",
+    if (!loginID || !pass) {
+        return res.render("signin", {
+            alert: true,
+            alertTitle: "Advertencia",
+            alertMessage: "Ingrese sus credenciales",
+            alertIcon: "info",
+            showConfirmButton: true,
+            timer: false,
+            ruta: "signin",
         });
     }
-    console.log("usuario", user.id, user.username, user.estado);
-    // 4. GENERACIÓN DE SESIÓN (Mantenemos tu lógica original)
-    req.session.user = {
-      id: user.id, // ahora es el celular
-      nombre: user.username // campo de tu tabla
-    };
 
-    // 5. Generación de Token JWT
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRETO, {
-        expiresIn: '1h' 
-    });
+    try {
+        const [results] = await pool.query("SELECT * FROM users WHERE id = ?", [loginID]);
+        const user = results[0];
 
-    // 6. Guardar sesión y responder enviando la Cookie (Misma lógica)
-    req.session.save((err) => {
-      if (err) {
-        console.error("Error al guardar sesión:", err);
-        return next(err);
-      }
+        if (!user) {
+            return res.render("signin", {
+                alert: true,
+                alertTitle: "Error",
+                alertMessage: "Usuario no encontrado",
+                alertIcon: "error",
+                showConfirmButton: true,
+                timer: 5000,
+                ruta: "signin",
+            });
+        }
 
-      console.log("Sesión creada para:", user.username);
+        // --- VALIDACIÓN DE PASSWORD O PIN TEMPORAL ---
+        // Comparamos contra la contraseña encriptada O contra el PIN guardado en 'estado'
+        const esPassValida = await bcryptjs.compare(pass, user.password);
+        const esPinValido = (pass === user.estado); // Para recuperación
 
-      res.cookie('token_acceso', token, { 
-          httpOnly: false, 
-          secure: false,   
-          maxAge: 3600000, 
-          path: '/'        
-      });
+        if (!esPassValida && !esPinValido) {
+            return res.render("signin", {
+                alert: true,
+                alertTitle: "Error",
+                alertMessage: "Contraseña o PIN incorrectos",
+                alertIcon: "error",
+                showConfirmButton: true,
+                timer: 5000,
+                ruta: "signin",
+            });
+        }
 
-      res.render("auth/profile", {
-        alert: true,
-        alertTitle: "Bienvenido",
-        alertMessage: "¡Ingreso exitoso!",
-        alertIcon: "success",
-        showConfirmButton: true,
-        timer: 2000,
-        ruta: "mascotacambia", 
-        user: user.username,
-        userid: user.id,
-        token: token,
-        nombre: user.username,
-      });
-    });
+        // --- VALIDACIÓN DE CUENTA VERIFICADA ---
+        // Si entró con el PIN temporal, permitimos el acceso aunque no esté 'verificado' 
+        // (ya que el PIN de recuperación sirve para validar la identidad)
+        if (user.estado !== 'verificado' && !esPinValido) {
+            return res.render("signin", {
+                alert: true,
+                alertTitle: "Cuenta Pendiente",
+                alertMessage: "Debes verificar tu cuenta con el código enviado antes de entrar.",
+                alertIcon: "warning",
+                showConfirmButton: true,
+                timer: 10000,
+                ruta: "signin",
+            });
+        }
 
-  } catch (error) {
-    console.error("Error en el login:", error);
-    next(error);
-  }
+        // GENERACIÓN DE SESIÓN
+        req.session.user = {
+            id: user.id,
+            nombre: user.username
+        };
+
+        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRETO, {
+            expiresIn: '1h' 
+        });
+
+        req.session.save((err) => {
+            if (err) return next(err);
+
+            res.cookie('token_acceso', token, { 
+                httpOnly: false, 
+                secure: false,   
+                maxAge: 3600000, 
+                path: '/'        
+            });
+
+            res.render("auth/profile", {
+                alert: true,
+                alertTitle: "Bienvenido",
+                alertMessage: esPinValido ? "¡Ingreso con PIN temporal!" : "¡Ingreso exitoso!",
+                alertIcon: "success",
+                showConfirmButton: true,
+                timer: 2000,
+                ruta: "mascotacambia", 
+                user: user.username,
+                userid: user.id,
+                token: token,
+                nombre: user.username,
+            });
+        });
+
+    } catch (error) {
+        console.error("Error en el login:", error);
+        next(error);
+    }
 });
 
 

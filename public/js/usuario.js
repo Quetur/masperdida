@@ -12,7 +12,6 @@ const RegistroApp = {
     pins: document.querySelectorAll(".pin-in"),
     modal: document.getElementById("modalPIN"),
     btnRegistrar: document.getElementById("btn-registrar"),
-    // Campos ocultos y visuales del Modal
     inputIntentos: document.getElementById("intentos_input"),
     inputDestino: document.getElementById("destino_hidden"),
     inputMetodo: document.getElementById("metodo_hidden"),
@@ -22,22 +21,14 @@ const RegistroApp = {
   },
 
   init() {
-    // Limpia bloqueos de accesibilidad que impiden el foco
-    document.querySelectorAll('[aria-hidden="true"]').forEach((el) => {
-      if (el.contains(this.ui.modal)) {
-        el.removeAttribute("aria-hidden");
-      }
-    });
     this.bindEvents();
     this.toggleView();
   },
 
   bindEvents() {
-    // Cambio entre WhatsApp y Email
     this.ui.radioWs?.addEventListener("change", () => this.toggleView());
     this.ui.radioEmail?.addEventListener("change", () => this.toggleView());
 
-    // Máscara de WhatsApp y verificación de existencia
     this.ui.mask?.addEventListener("input", (e) => {
       this.handleMask(e);
       if (this.ui.final.value.length === 10) {
@@ -47,7 +38,6 @@ const RegistroApp = {
       }
     });
 
-    // Verificación de existencia por Email
     this.ui.emailInput?.addEventListener("blur", () => {
       const email = this.ui.emailInput.value.trim();
       if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -55,13 +45,11 @@ const RegistroApp = {
       }
     });
 
-    // Toggle para ver contraseña
     this.ui.btnToggle?.addEventListener("click", () => this.togglePassword());
 
-    // Manejo de los 4 cuadros del PIN
     this.ui.pins.forEach((input, idx) => {
       input.addEventListener("input", (e) => {
-        e.target.value = e.target.value.replace(/\D/g, ""); // Solo números
+        e.target.value = e.target.value.replace(/\D/g, "");
         if (e.target.value && idx < 3) this.ui.pins[idx + 1].focus();
         this.syncPin();
       });
@@ -73,31 +61,66 @@ const RegistroApp = {
     });
   },
 
-  /**
-   * Paso 1: Registro Inicial vía Fetch
-   */
+  setLoading(isLoading) {
+    this.ui.btnRegistrar.disabled = isLoading;
+    this.ui.btnRegistrar.innerHTML = isLoading
+      ? "ENVIANDO CÓDIGO..."
+      : "REGISTRARME AHORA";
+  },
+
   async procesarRegistroFinal() {
-    const nombre = document.getElementById("nombre").value.trim();
+    // 1. Captura de valores directa del DOM para evitar errores de referencia
+    const nombre = document.getElementById("nombre")?.value.trim();
     const pass = this.ui.passInput.value;
     const metodo = this.ui.radioWs.checked ? "ws" : "email";
-    const celular = this.ui.final.value;
-    const email = this.ui.emailInput.value;
 
-    if (!nombre || pass.length < 6) {
+    // Capturamos el destino (celular limpio o email)
+    const celular = this.ui.final.value; // El valor sin ( ) ni -
+    const email = this.ui.emailInput.value.trim();
+
+    // 2. Validación previa en el Frontend
+    if (!nombre) {
       return Swal.fire(
-        "Atención",
-        "Nombre completo y contraseña (min 6 carac.) son requeridos.",
+        "Campo requerido",
+        "Por favor, ingresa tu nombre completo.",
         "warning"
       );
     }
 
-    this.ui.btnRegistrar.disabled = true;
-    this.ui.btnRegistrar.innerHTML = "Enviando código...";
+    if (metodo === "ws" && celular.length < 10) {
+      return Swal.fire(
+        "WhatsApp inválido",
+        "Por favor, ingresa un número de teléfono completo.",
+        "warning"
+      );
+    }
+
+    if (metodo === "email" && !email.includes("@")) {
+      return Swal.fire(
+        "Email inválido",
+        "Por favor, ingresa un correo electrónico válido.",
+        "warning"
+      );
+    }
+
+    if (pass.length < 6) {
+      return Swal.fire(
+        "Contraseña corta",
+        "La contraseña debe tener al menos 6 caracteres.",
+        "warning"
+      );
+    }
+
+    // 3. Estado de carga en el botón
+    this.setLoading(true);
 
     try {
+      // 4. Envío de la petición
       const response = await fetch("/registrar", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           nombre,
           celular,
@@ -109,48 +132,54 @@ const RegistroApp = {
 
       const result = await response.json();
 
-      if (result.success) {
-        // Sincronizar datos con el modal
+      if (response.ok && result.success) {
+        // ÉXITO: Sincronizamos los datos con el Modal
         this.ui.txtDestinoVisual.innerText = result.destino;
         this.ui.inputDestino.value = result.destino;
         this.ui.inputMetodo.value = result.metodo;
-        this.ui.inputIntentos.value = result.intentos; // Inicialmente 5
+        this.ui.inputIntentos.value = result.intentos;
         this.ui.txtContadorVisual.innerText = result.intentos;
 
+        // Abrimos modal y damos foco al primer input del PIN
         this.ui.modal.classList.add("active");
-        Swal.fire(
-          "Código enviado",
-          `Revisa tu ${metodo === "ws" ? "WhatsApp" : "correo"}`,
-          "success"
-        );
+        setTimeout(() => {
+          if (this.ui.pins[0]) this.ui.pins[0].focus();
+        }, 500);
+
+        Swal.fire({
+          icon: "success",
+          title: "Código enviado",
+          text: `Revisa tu ${metodo === "ws" ? "WhatsApp" : "correo"}`,
+          timer: 2000,
+          showConfirmButton: false,
+        });
       } else {
-        throw new Error(result.error);
+        // ERROR del servidor (aquí cae el 400 con el mensaje de "Usuario ya existe")
+        throw new Error(result.error || "Error desconocido en el registro");
       }
     } catch (error) {
-      this.ui.btnRegistrar.disabled = false;
-      this.ui.btnRegistrar.innerHTML = "REGISTRARME AHORA";
-      Swal.fire("Error", error.message || "Error al registrar", "error");
+      // Restauramos el botón y mostramos el error real
+      this.setLoading(false);
+      console.error("Detalle del error:", error);
+      Swal.fire("Error en el registro", error.message, "error");
     }
   },
 
-  /**
-   * Paso 2: Validación de PIN vía Fetch (Sin recarga)
-   */
+  syncPin() {
+    const pinValue = Array.from(this.ui.pins)
+      .map((i) => i.value)
+      .join("");
+    this.ui.inputPinCompleto.value = pinValue;
+    // Validación automática al completar los 4 dígitos
+    if (pinValue.length === 4) this.validarPinFetch();
+  },
+
   async validarPinFetch() {
-    this.syncPin();
-
-    // Forzamos la lectura directa del DOM en cada clic
-    const elIntentos = document.getElementById("intentos_input");
-    let intentosActuales = parseInt(elIntentos.value);
-
     const pin = this.ui.inputPinCompleto.value;
     const destino_verif = this.ui.inputDestino.value;
-    const metodo_verif = this.ui.inputMetodo.value;
+    const intentosActuales = parseInt(this.ui.inputIntentos.value);
 
-    console.log("Enviando al servidor:", { pin, intentosActuales });
-
-    if (pin.length < 4)
-      return Swal.fire("Incompleto", "Ingresa los 4 dígitos", "warning");
+    if (pin.length < 4) return;
 
     try {
       const response = await fetch("/validar", {
@@ -159,95 +188,36 @@ const RegistroApp = {
         body: JSON.stringify({
           pin,
           destino_verif,
-          metodo_verif,
           intentos: intentosActuales,
-          nombre,
         }),
       });
 
       const result = await response.json();
 
       if (result.success) {
-        // 1. CERRAMOS EL MODAL INMEDIATAMENTE
-        const modal = document.getElementById("modalPIN");
-        if (modal) {
-          modal.classList.remove("active"); // Esto lo oculta visualmente
-        }
-
-        // 2. Mostramos el SweetAlert de éxito (ahora sí será visible y clickeable)
+        this.ui.modal.classList.remove("active");
         Swal.fire({
           icon: "success",
           title: "¡Bienvenido!",
-          text: "Ya puedes ingresar a la comunidad.",
-          confirmButtonText: "Aceptar",
-          confirmButtonColor: "#0d6efd",
+          text: "Cuenta verificada con éxito.",
           allowOutsideClick: false,
-        }).then((res) => {
-          if (res.isConfirmed) {
-            window.location.href = "/signin";
-          }
-        });
-
-        return; // Detenemos la ejecución para que no entre al bloque de error
+        }).then(() => (window.location.href = "/signin"));
       } else {
-        // 2. ERROR: Sincronización de intentos con el DOM
-        const nuevosIntentos = result.intentosRestantes;
-
-        // Actualizamos tanto el input hidden como el contador visual
-        if (elIntentos) elIntentos.value = nuevosIntentos;
-        const elContador = document.getElementById("contador_visual");
-        if (elContador) elContador.innerText = nuevosIntentos;
-
-        // Limpieza de los cuadraditos del PIN para el nuevo intento
-        this.ui.pins.forEach((input) => (input.value = ""));
-        this.ui.inputPinCompleto.value = "";
+        const nuevos = result.intentosRestantes;
+        this.ui.inputIntentos.value = nuevos;
+        this.ui.txtContadorVisual.innerText = nuevos;
+        this.ui.pins.forEach((i) => (i.value = ""));
         this.ui.pins[0].focus();
 
-        // 3. CASO: Intentos Agotados (Bandera 'agotado' o intentos en 0)
-        if (result.agotado || nuevosIntentos <= 0) {
-          Swal.fire({
-            icon: "error",
-            title: "Registro Cancelado",
-            text:
-              "Has superado el límite de intentos. Tu registro ha sido eliminado por seguridad.",
-            confirmButtonText: "Ir al Inicio",
-            confirmButtonColor: "#dc3545",
-            allowOutsideClick: false,
-          }).then(() => {
-            // Redirección definitiva al Home según lo solicitado
-            window.location.href = "/";
-          });
+        if (result.agotado) {
+          Swal.fire(
+            "Agotado",
+            "Registro eliminado por seguridad.",
+            "error"
+          ).then(() => (window.location.href = "/"));
         } else {
-          // 4. CASO: PIN Incorrecto (Todavía tiene intentos)
-          Swal.fire({
-            icon: "error",
-            title: "PIN Incorrecto",
-            text: `Te quedan ${nuevosIntentos} ${
-              nuevosIntentos === 1 ? "intento" : "intentos"
-            }.`,
-            confirmButtonColor: "#0d6efd",
-          });
+          Swal.fire("PIN Incorrecto", `Te quedan ${nuevos} intentos.`, "error");
         }
-      }
-    } catch (error) {
-      console.error("Error:", error);
-    }
-  },
-
-  async ejecutarChequeoExistencia(valorId) {
-    try {
-      const res = await fetch("/verificar-usuario-existente", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ codigo: valorId }),
-      });
-      const data = await res.json();
-      if (data.existe) {
-        this.bloquearPasosSiguientes();
-        Swal.fire("Usuario Registrado", "Ya estas registrado", "info");
-      } else {
-        this.ui.passInput.disabled = false;
-        this.ui.btnRegistrar.disabled = false;
       }
     } catch (e) {
       console.error(e);
@@ -270,9 +240,11 @@ const RegistroApp = {
     this.ui.wrapEmail.style.display = isWs ? "none" : "block";
   },
 
+  // La función de toggle
   togglePassword() {
     const isPass = this.ui.passInput.type === "password";
     this.ui.passInput.type = isPass ? "text" : "password";
+    // Cambiamos el icono según el estado
     this.ui.btnToggle.innerText = isPass ? "🙈" : "👁️";
   },
 
@@ -281,49 +253,44 @@ const RegistroApp = {
     this.ui.btnRegistrar.disabled = true;
   },
 
-  syncPin() {
-    this.ui.inputPinCompleto.value = Array.from(this.ui.pins)
-      .map((i) => i.value)
-      .join("");
+  async ejecutarChequeoExistencia(valorId) {
+    try {
+      const res = await fetch("/verificar-usuario-existente", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ codigo: valorId }),
+      });
+      const data = await res.json();
+      if (data.existe) {
+        this.bloquearPasosSiguientes();
+        Swal.fire("Aviso", "Este usuario ya está registrado.", "info");
+      } else {
+        this.ui.passInput.disabled = false;
+        this.ui.btnRegistrar.disabled = false;
+      }
+    } catch (e) {
+      console.error(e);
+    }
   },
 };
 
-/**
- * Disparadores Globales
- */
-function validarRegistro() {
+document.addEventListener("DOMContentLoaded", () => RegistroApp.init());
+
+function validarRegistro(event) {
+  if (event) event.preventDefault(); // Blindaje extra contra refrescos
   RegistroApp.procesarRegistroFinal();
 }
-
 function enviarPin() {
   RegistroApp.validarPinFetch();
 }
-
 async function cancelarRegistro() {
   const destino = document.getElementById("destino_hidden").value;
-
-  if (!destino) {
-    window.location.href = "/usuario";
-    return;
-  }
-
-  try {
-    const response = await fetch("/limpiar-registro-fallido", {
+  if (destino) {
+    await fetch("/limpiar-registro-fallido", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ celular: destino }), // Enviamos el destino como 'celular' según tu ruta
+      body: JSON.stringify({ celular: destino }),
     });
-
-    const result = await response.json();
-
-    if (result.status === "ok") {
-      window.location.href = "/usuario";
-    }
-  } catch (error) {
-    console.error("Error al limpiar registro:", error);
-    // Redirigimos de todos modos para no trabar al usuario
-    window.location.href = "/usuario";
   }
+  window.location.href = "/usuario";
 }
-
-document.addEventListener("DOMContentLoaded", () => RegistroApp.init());
