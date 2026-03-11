@@ -13,7 +13,6 @@
         letter-spacing: 0.12em;
         margin: 25px 0 12px 0;
     }
-
     /* --- BOTÓN TOGGLE TOTALMENTE VISIBLE --- */
     .toggle-handler {
         position: absolute;
@@ -35,12 +34,10 @@
         font-size: 1.2rem;
         transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
-
     .toggle-handler:hover { 
         background-color: #ff5252 !important; 
         transform: scale(1.1) translateX(5px); /* Se mueve un poquito más al pasar el mouse */
     }
-
     /* Checkboxes Personalizados Modernos */
     .custom-check {
         display: flex;
@@ -55,7 +52,6 @@
     
     .custom-check:hover { background-color: #f1f5f9; }
     .custom-check input { position: absolute; opacity: 0; width: 0; height: 0; }
-
     .box {
         width: 24px;
         height: 24px;
@@ -65,12 +61,10 @@
         position: relative;
         background: white;
     }
-
     .custom-check input:checked + .box {
         background-color: #2563eb;
         border-color: #2563eb;
     }
-
     .custom-check input:checked + .box::after {
         content: "✓";
         color: white;
@@ -80,9 +74,7 @@
         transform: translate(-50%, -50%);
         font-weight: 900;
     }
-
     .label-text { font-size: 1.05rem; color: #334155; font-weight: 600; }
-
     /* --- SPINNER DE CARGA --- */
     .loader-container {
         display: none;
@@ -91,7 +83,6 @@
         padding: 30px 0;
         margin-top: 25px;
     }
-
     .spinner {
         width: 35px;
         height: 35px;
@@ -100,7 +91,6 @@
         border-radius: 50%;
         animation: spin 0.8s linear infinite;
     }
-
     @keyframes spin {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
@@ -157,7 +147,6 @@
         const form = document.getElementById('sidebar-form');
         const loader = document.getElementById('sidebar-loader');
         const groups = document.querySelectorAll('.checkbox-group');
-
         groups.forEach(group => {
             const checkboxes = group.querySelectorAll('input[type="checkbox"]');
             
@@ -170,7 +159,6 @@
                         
                         // Guardar estado colapsado para la siguiente carga
                         localStorage.setItem('sidebar_collapsed', 'true');
-
                         form.submit();
                     }
                 });
