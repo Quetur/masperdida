@@ -685,7 +685,14 @@ console.log("entro en /api/direccion/:ubi", ubiParams, "keyDom", keyDom)
     res.status(500).json({ error: error.message });
   }
 });
+ 
 
+router.get('/about', (req, res) => {
+    res.render('about', { 
+        user: req.user, // Para que el header sepa si mostrar el nombre del usuario
+        hideSidebar: true // Esto hará que la sección de filtros desaparezca en esta página
+    });
+});
 
 
 export default router;

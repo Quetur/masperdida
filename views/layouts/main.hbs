@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -7,13 +8,13 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <link rel="icon" href="/img/logo.png" type="image/png">
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="/css/main.css">
 
     <script>
-        (function() {
+        (function () {
             const isCollapsed = localStorage.getItem('sidebar_collapsed') === 'true';
             if (isCollapsed) {
                 document.documentElement.setAttribute('data-sidebar', 'collapsed');
@@ -23,7 +24,7 @@
 </head>
 
 <body class="{{#if isCollapsed}}sidebar-hidden-init{{/if}}">
-    
+
     <header class="top-navbar">
         <div class="nav-left">
             <a href="/" class="brand-link">
@@ -38,29 +39,30 @@
             </button>
 
             {{#if user}}
-                <div class="admin-menu-container">
-                    <input type="checkbox" id="menu-toggle" hidden>
-                    <label for="menu-toggle" class="nav-btn-professional">
-                        <i class="fas fa-user-circle"></i>
-                        <span class="user-name-text">{{user.nombre}}</span>
-                        <i class="fas fa-chevron-down" style="font-size: 0.8rem;"></i>
-                    </label>
-                    <ul class="admin-dropdown">
-                        <li><a href="/mascotacambia"><i class="fas fa-paw"></i> Tus Mascotas</a></li>
-                        <li><a href="/usuario"><i class="fas fa-user-edit"></i> Editar tu perfil</a></li>
-                        <li class="menu-divider"></li>
-                        <li><a href="/logout" id="btnSalirMenu" class="logout-link"><i class="fas fa-sign-out-alt"></i> Salir</a></li>
-                    </ul>
-                </div>
+            <div class="admin-menu-container">
+                <input type="checkbox" id="menu-toggle" hidden>
+                <label for="menu-toggle" class="nav-btn-professional">
+                    <i class="fas fa-user-circle"></i>
+                    <span class="user-name-text">{{user.nombre}}</span>
+                    <i class="fas fa-chevron-down" style="font-size: 0.8rem;"></i>
+                </label>
+                <ul class="admin-dropdown">
+                    <li><a href="/mascotacambia"><i class="fas fa-paw"></i> Tus Mascotas</a></li>
+                    <li><a href="/usuario"><i class="fas fa-user-edit"></i> Editar tu perfil</a></li>
+                    <li class="menu-divider"></li>
+                    <li><a href="/logout" id="btnSalirMenu" class="logout-link"><i class="fas fa-sign-out-alt"></i>
+                            Salir</a></li>
+                </ul>
+            </div>
             {{else}}
-                <a href="/signin" id="btnAcceso" class="nav-btn-professional">INGRESAR</a>
+            <a href="/signin" id="btnAcceso" class="nav-btn-professional">INGRESAR</a>
             {{/if}}
         </div>
     </header>
 
     <div class="layout-container">
         {{#unless hideSidebar}}
-            {{> sidebar }}
+        {{> sidebar }}
         {{/unless}}
 
         <main id="main-content" class="content {{#if hideSidebar}}full-width{{/if}}">
@@ -81,7 +83,7 @@
             // 1. Manejo del Sidebar (Persistencia y Flecha Roja)
             if (sidebar && toggleBtn) {
                 const isCollapsed = localStorage.getItem('sidebar_collapsed') === 'true';
-                
+
                 const setSidebarState = (collapsed) => {
                     if (collapsed) {
                         sidebar.classList.add('collapsed');
@@ -144,6 +146,15 @@
                 });
             }
         });
+        
+        // Redirección a la nueva página Acerca de
+        const btnAbout = document.getElementById('btnAbout');
+        if (btnAbout) {
+            btnAbout.addEventListener('click', () => {
+                window.location.href = '/about';
+            });
+        }
     </script>
 </body>
+
 </html>

@@ -1,6 +1,6 @@
 /* --- VARIABLES GLOBALES --- */
 :root {
-    --nav-h: 180px;
+    --nav-h: 140px; /* Reducido de 180px a 140px para PC */
     --sb-w: 280px;
     --p-color: #2563eb;
     --p-dark: #1e3a8a;
@@ -10,8 +10,8 @@
     --text-dark: #0f172a;
     --border-color: #e2e8f0;
     --shadow-xl: 0 25px 30px -5px rgba(0, 0, 0, 0.15);
-    --radius-md: 16px;
-    --radius-lg: 24px;
+    --radius-md: 12px; /* Un poco más sutil */
+    --radius-lg: 20px;
 }
 
 /* --- RESET Y BASE --- */
@@ -30,20 +30,21 @@ body {
     justify-content: space-between;
     align-items: center;
     background-color: var(--white);
-    padding: 0 60px;
+    padding: 0 40px; /* Reducido de 60px para ganar espacio */
     height: var(--nav-h);
     width: 100%;
     position: fixed; 
     top: 0; left: 0;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-    border-bottom: 3px solid var(--border-color);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); /* Sombra más suave */
+    border-bottom: 2px solid var(--border-color);
     z-index: 2000;
 }
 
 .brand-link { display: flex; align-items: center; text-decoration: none; }
 
 .nav-logo {
-    width: 160px; height: 160px;
+    width: 130px; /* Ajustado a tu pedido */
+    height: 130px;
     object-fit: contain;
     transition: transform 0.3s ease;
 }
@@ -51,133 +52,121 @@ body {
 .brand-name {
     color: var(--p-color);
     font-weight: 900;
-    font-size: 2.2rem;
-    margin-left: 25px;
-    letter-spacing: -1.5px;
+    font-size: 1.8rem; /* Un poco más chico para PC */
+    margin-left: 15px;
+    letter-spacing: -1px;
 }
 
 /* --- BOTONES NAVBAR --- */
-.nav-right { display: flex; align-items: center; gap: 20px; }
+.nav-right { display: flex; align-items: center; gap: 15px; }
 
-/* Botón Acerca de (Amarillo Retro) */
-.btn-about-custom {
-    background-color: #ffeb3b !important;
-    color: #000000 !important;
-    border: 3px solid #000000 !important;
+/* Botón Ingresar XL Ajustado a Proporción */
+.nav-btn-professional {
+    background: var(--p-gradient) !important;
+    color: #ffffff !important;
+    padding: 0 30px; 
+    height: 55px; /* Reducido de 75px para ser más armonioso */
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    border: none;
+}
+
+.nav-btn-professional:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+}
+
+/* --- NUEVO BOTÓN ACERCA DE (AMARILLO PASTEL CLARO) --- */
+.btn-about-retro {
+    background-color: #fef9c3 !important; /* Amarillo pastel más claro */
+    color: #1e293b !important;
+    border: 2px solid #1e293b !important; /* Borde un poco más fino */
     font-weight: 800;
-    padding: 12px 24px;
-    border-radius: 8px;
+    padding: 10px 18px;
+    border-radius: 10px;
     cursor: pointer;
     display: flex;
     align-items: center;
     gap: 8px;
+    font-size: 0.85rem;
     text-transform: uppercase;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
+    box-shadow: 3px 3px 0px #1e293b; /* Sombra sólida retro */
 }
 
-.btn-about-custom:hover {
-    transform: translate(-3px, -3px);
-    box-shadow: 5px 5px 0px #000000;
+.btn-about-retro:hover {
+    background-color: #fef08a !important; /* Un tono más intenso al pasar el mouse */
+    transform: translate(-1px, -1px);
+    box-shadow: 5px 5px 0px #1e293b;
 }
 
-/* Botón Ingresar XL */
-.nav-btn-professional {
-    background: var(--p-gradient) !important;
-    color: #ffffff !important;
-    padding: 0 45px; 
-    height: 75px;
-    border-radius: var(--radius-md);
-    box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    transition: all 0.3s ease;
-    text-decoration: none;
+.btn-about-retro:active {
+    transform: translate(1px, 1px);
+    box-shadow: 1px 1px 0px #1e293b;
 }
 
 /* --- DROPDOWN --- */
 .admin-dropdown {
     position: absolute;
-    top: calc(100% + 20px);
+    top: calc(100% + 15px);
     right: 0;
-    width: 350px;
+    width: 280px; /* Más compacto */
     background: var(--white);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-xl);
-    padding: 20px;
+    padding: 15px;
     z-index: 3000;
     list-style: none;
     display: none;
+    border: 1px solid var(--border-color);
 }
 #menu-toggle:checked ~ .admin-dropdown { display: block; }
 
 /* --- ESTRUCTURA --- */
 .layout-container { display: flex; min-height: calc(100vh - var(--nav-h)); }
-#sidebar { width: var(--sb-w); background: var(--white); border-right: 3px solid var(--border-color); position: fixed; top: var(--nav-h); bottom: 0; z-index: 1000; transition: transform 0.3s ease; }
-#main-content { flex: 1; margin-left: var(--sb-w); padding: 60px; transition: margin 0.3s ease; }
+#sidebar { 
+    width: var(--sb-w); 
+    background: var(--white); 
+    border-right: 2px solid var(--border-color); 
+    position: fixed; 
+    top: var(--nav-h); 
+    bottom: 0; 
+    z-index: 1000; 
+}
+#main-content { 
+    flex: 1; 
+    margin-left: var(--sb-w); 
+    padding: 40px; /* Reducido de 60px */
+    transition: margin 0.3s ease; 
+}
 
 /* --- RESPONSIVO --- */
 @media (max-width: 768px) {
-    .top-navbar { height: 110px; padding: 0 20px; }
-    .nav-logo { width: 80px; height: 80px; }
+    :root { --nav-h: 100px; }
+    .top-navbar { height: var(--nav-h); padding: 0 15px; }
+    .nav-logo { width: 85px; height: 85px; }
     .brand-name { display: none; }
-    /* Botón ingresar más chico en celular */
-    .nav-btn-professional { height: 45px !important; padding: 0 20px !important; font-size: 0.85rem !important; border-radius: 10px; }
-    .btn-about-custom { padding: 8px 12px !important; font-size: 0.7rem !important; border-width: 2px !important; }
-}
-
-/* --- NUEVO BOTÓN ACERCA DE (ESTILO AMARILLO RETRO) --- */
-.btn-about-retro {
-    background-color: #ffeb3b !important;
-    color: #000000 !important;
-    border: 3px solid #000000 !important;
-    font-weight: 800;
-    padding: 10px 20px;
-    border-radius: 8px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    transition: all 0.2s ease;
-    box-shadow: 4px 4px 0px #000000;
-}
-
-.btn-about-retro:hover {
-    transform: translate(-2px, -2px);
-    box-shadow: 6px 6px 0px #000000;
-}
-
-.btn-about-retro:active {
-    transform: translate(0, 0);
-    box-shadow: 2px 2px 0px #000000;
-}
-
-/* --- AJUSTE MÓVIL ESPECÍFICO --- */
-@media (max-width: 768px) {
-    /* Hacemos el botón de ingresar más chico en celulares */
-    .nav-btn-professional {
-        padding: 0 15px !important;
-        height: 45px !important; /* Altura reducida */
-        font-size: 0.85rem !important;
-        gap: 10px !important;
+    
+    .nav-btn-professional { 
+        height: 42px !important; 
+        padding: 0 15px !important; 
+        font-size: 0.8rem !important; 
     }
-
-    .user-name-text {
-        font-size: 0.9rem !important;
+    
+    .btn-about-retro { 
+        padding: 8px 12px !important; 
+        font-size: 0.7rem !important; 
+        border-width: 2px !important;
+        box-shadow: 2px 2px 0px #1e293b;
     }
-
-    /* Ajustamos el botón amarillo en celular */
-    .btn-about-retro {
-        padding: 8px 12px !important;
-        font-size: 0.75rem !important;
-        border: 2px solid #000000 !important;
-        box-shadow: 3px 3px 0px #000000;
-    }
-
-    .nav-right {
-        gap: 10px; /* Menos espacio entre botones */
-    }
+    
+    #main-content { padding: 20px; }
 }
