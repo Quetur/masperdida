@@ -1,94 +1,58 @@
 <!DOCTYPE html>
 <html lang="es">
-
-<script>
-    (function() {
-        const isCollapsed = localStorage.getItem('sidebar_collapsed') === 'true';
-        if (isCollapsed) {
-            document.documentElement.setAttribute('data-sidebar', 'collapsed');
-        }
-    })();
-</script>
-
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Mascota Perdida</title>
-    <!-- FontAwesome URL Completa -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <link rel="icon" href="/img/logo.png" type="image/png">
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="/css/main.css">
 
-    <style>
-        .btn-add-pet {
-            background-color: #28a745 !important;
-            color: white !important;
-            border-radius: 8px;
-            padding: 10px 18px;
-            margin-right: 15px;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .btn-add-pet:hover {
-            background-color: #218838 !important;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        @media (max-width: 600px) {
-            .btn-text-nav { display: none; }
-            .btn-add-pet { padding: 10px; margin-right: 5px; }
-        }
-    </style>
-</head>
-
-<body>
-    <!-- SCRIPT DE PRE-CARGA -->
     <script>
         (function() {
             const isCollapsed = localStorage.getItem('sidebar_collapsed') === 'true';
             if (isCollapsed) {
-                document.documentElement.classList.add('sidebar-hidden-init');
+                document.documentElement.setAttribute('data-sidebar', 'collapsed');
             }
         })();
     </script>
+</head>
 
+<body class="{{#if isCollapsed}}sidebar-hidden-init{{/if}}">
+    
     <header class="top-navbar">
-<div class="nav-left">
-    <a href="/" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
-        <img src="/img/logo.png" alt="Logo" class="nav-logo"
-            style="width: 100px; height: 100px; object-fit: contain;">
-        
-        <span class="brand-name" style="color: #2563eb; font-weight: 800; font-size: 1.5rem; margin-left: 10px; letter-spacing: -0.5px;">
-            Ayudame a volver a casa
-        </span>
-    </a>
-</div>
+        <div class="nav-left">
+            <a href="/" class="brand-link">
+                <img src="/img/logo.png" alt="Logo" class="nav-logo">
+                <span class="brand-name">Ayudame a volver a casa</span>
+            </a>
+        </div>
 
-        <div class="nav-right" style="display: flex; align-items: center;">
+        <div class="nav-right">
+            <button id="btnAbout" class="btn-about-retro">
+                <i class="fas fa-info-circle"></i> ACERCA DE NOSOTROS
+            </button>
+
             {{#if user}}
-                <!-- SECCIÓN PARA USUARIO AUTENTICADO (Leído desde res.locals.user) -->
-                <div id="adminContainer" class="admin-menu-container" style="display: flex;">
-                    <input type="checkbox" id="menu-toggle">
+                <div class="admin-menu-container">
+                    <input type="checkbox" id="menu-toggle" hidden>
                     <label for="menu-toggle" class="nav-btn-professional">
                         <i class="fas fa-user-circle"></i>
-                        <span id="nombreUsuarioMenu" class="user-name-text">{{user.nombre}}</span>
+                        <span class="user-name-text">{{user.nombre}}</span>
+                        <i class="fas fa-chevron-down" style="font-size: 0.8rem;"></i>
                     </label>
                     <ul class="admin-dropdown">
-                        <li><a href="/mascotacambia">Tus Mascotas</a></li>
-                        <li><a href="/">Editar tu perfil</a></li>
+                        <li><a href="/mascotacambia"><i class="fas fa-paw"></i> Tus Mascotas</a></li>
+                        <li><a href="/usuario"><i class="fas fa-user-edit"></i> Editar tu perfil</a></li>
                         <li class="menu-divider"></li>
-                        <li><a href="/logout" id="btnSalirMenu">Salir</a></li>
+                        <li><a href="/logout" id="btnSalirMenu" class="logout-link"><i class="fas fa-sign-out-alt"></i> Salir</a></li>
                     </ul>
                 </div>
             {{else}}
-                <!-- SECCIÓN PARA USUARIO NO AUTENTICADO O TOKEN VENCIDO -->
                 <a href="/signin" id="btnAcceso" class="nav-btn-professional">INGRESAR</a>
             {{/if}}
         </div>
@@ -99,48 +63,84 @@
             {{> sidebar }}
         {{/unless}}
 
-        <main id="main-content" class="content">
+        <main id="main-content" class="content {{#if hideSidebar}}full-width{{/if}}">
             {{{body}}}
         </main>
     </div>
 
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            const ui = {
-                sidebar: document.getElementById('sidebar'),
-                toggleBtn: document.getElementById('toggle-btn'),
-                content: document.getElementById('main-content'),
-                btnSalirMenu: document.getElementById('btnSalirMenu')
-            };
+            const sidebar = document.getElementById('sidebar');
+            const content = document.getElementById('main-content');
+            const toggleBtn = document.getElementById('toggle-btn');
 
-            // --- PERSISTENCIA DEL SIDEBAR ---
-            if (ui.sidebar && ui.toggleBtn) {
+            // 1. Manejo del Sidebar (Persistencia y Flecha Roja)
+            if (sidebar && toggleBtn) {
                 const isCollapsed = localStorage.getItem('sidebar_collapsed') === 'true';
                 
-                if (isCollapsed) {
-                    ui.sidebar.classList.add('collapsed');
-                    ui.content.classList.add('expanded');
-                    ui.toggleBtn.innerText = '➔';
-                } else {
-                    ui.toggleBtn.innerText = '⬅';
-                }
+                const setSidebarState = (collapsed) => {
+                    if (collapsed) {
+                        sidebar.classList.add('collapsed');
+                        content.classList.add('expanded');
+                        toggleBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+                    } else {
+                        sidebar.classList.remove('collapsed');
+                        content.classList.remove('expanded');
+                        toggleBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+                    }
+                };
 
-                ui.toggleBtn.addEventListener('click', (e) => {
+                setSidebarState(isCollapsed);
+
+                toggleBtn.addEventListener('click', (e) => {
                     e.preventDefault();
-                    const nowCollapsed = ui.sidebar.classList.toggle('collapsed');
-                    ui.content.classList.toggle('expanded');
+                    const nowCollapsed = !sidebar.classList.contains('collapsed');
                     localStorage.setItem('sidebar_collapsed', nowCollapsed);
-                    ui.toggleBtn.innerText = nowCollapsed ? '➔' : '⬅';
+                    document.documentElement.setAttribute('data-sidebar', nowCollapsed ? 'collapsed' : 'expanded');
+                    setSidebarState(nowCollapsed);
                 });
             }
 
-            // --- LÓGICA DE CIERRE DE SESIÓN (Opcional si usas ruta /logout) ---
-            if (ui.btnSalirMenu) {
-                ui.btnSalirMenu.addEventListener('click', () => {
-                    // Limpiamos rastros locales por seguridad
+            // 2. Modal "Acerca de Nosotros" Estilo Amarillo/Negro
+            const btnAbout = document.getElementById('btnAbout');
+            if (btnAbout) {
+                btnAbout.addEventListener('click', () => {
+                    Swal.fire({
+                        title: '<span style="color: #000">Acerca de nosotros</span>',
+                        icon: 'info',
+                        background: '#fff',
+                        html: `
+                            <p style="text-align: left; line-height: 1.6; color: #333;">
+                                <b>Ayudame a volver a casa</b> es un portal dedicado a la recuperación de mascotas perdidas. 
+                                Nuestra misión es conectar a la comunidad para que cada animalito pueda reencontrarse con su familia.
+                            </p>
+                        `,
+                        confirmButtonText: 'CERRAR',
+                        confirmButtonColor: '#ffeb3b',
+                        customClass: {
+                            confirmButton: 'btn-swal-retro'
+                        }
+                    });
+                    // Estilo dinámico para el botón del modal
+                    const swalBtn = document.querySelector('.btn-swal-retro');
+                    if (swalBtn) {
+                        swalBtn.style.color = '#000';
+                        swalBtn.style.border = '2px solid #000';
+                        swalBtn.style.fontWeight = '800';
+                    }
+                });
+            }
+
+            // 3. Limpieza de sesión
+            const btnSalir = document.getElementById('btnSalirMenu');
+            if (btnSalir) {
+                btnSalir.addEventListener('click', () => {
                     sessionStorage.clear();
                     localStorage.removeItem('token_acceso');
-                    localStorage.removeItem('nombre');
                 });
             }
         });

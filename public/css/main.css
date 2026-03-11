@@ -1,216 +1,183 @@
-/* --- RESET Y BASE --- */
-body {
-    margin: 0;
-    padding-top: 70px; /* Evita que el contenido se solape con la barra fija */
-    font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
-    background-color: #f8fafc;
+/* --- VARIABLES GLOBALES --- */
+:root {
+    --nav-h: 180px;
+    --sb-w: 280px;
+    --p-color: #2563eb;
+    --p-dark: #1e3a8a;
+    --p-gradient: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+    --bg-main: #f8fafc;
+    --white: #ffffff;
+    --text-dark: #0f172a;
+    --border-color: #e2e8f0;
+    --shadow-xl: 0 25px 30px -5px rgba(0, 0, 0, 0.15);
+    --radius-md: 16px;
+    --radius-lg: 24px;
 }
 
-/* --- BARRA SUPERIOR FIJA (ESTABLE) --- */
+/* --- RESET Y BASE --- */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-dark);
+    padding-top: var(--nav-h);
+}
+
+/* --- TOP NAVBAR --- */
 .top-navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #ffffff;
-    padding: 0 30px;
-    height: 70px;
+    background-color: var(--white);
+    padding: 0 60px;
+    height: var(--nav-h);
     width: 100%;
     position: fixed; 
-    top: 0;
-    left: 0;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-    border-bottom: 1px solid #e2e8f0;
-    box-sizing: border-box;
+    top: 0; left: 0;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    border-bottom: 3px solid var(--border-color);
     z-index: 2000;
 }
 
-.nav-left a {
-    display: flex;
-    align-items: center;
-    text-decoration: none;
-}
+.brand-link { display: flex; align-items: center; text-decoration: none; }
 
 .nav-logo {
-    width: 42px;
-    height: auto;
-    margin-right: 12px;
-    border-radius: 8px;
+    width: 160px; height: 160px;
+    object-fit: contain;
+    transition: transform 0.3s ease;
 }
 
 .brand-name {
-    color: #0f172a;
+    color: var(--p-color);
+    font-weight: 900;
+    font-size: 2.2rem;
+    margin-left: 25px;
+    letter-spacing: -1.5px;
+}
+
+/* --- BOTONES NAVBAR --- */
+.nav-right { display: flex; align-items: center; gap: 20px; }
+
+/* Botón Acerca de (Amarillo Retro) */
+.btn-about-custom {
+    background-color: #ffeb3b !important;
+    color: #000000 !important;
+    border: 3px solid #000000 !important;
     font-weight: 800;
-    font-size: 1.25rem;
-    letter-spacing: -0.025em;
-}
-
-.nav-right {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 20px;
-    flex-shrink: 0;
-}
-
-/* --- CARRITO Y CONTADOR (DISEÑO GRANDE) --- */
-.cart-link {
-    position: relative;
-    display: flex;
-    align-items: center;
-    text-decoration: none;
-    margin-right: 25px;
-}
-
-.cart-icon-svg {
-    width: 35px;
-    height: 35px;
-    fill: #1e293b;
-    display: block;
-    transition: transform 0.2s ease;
-}
-
-.cart-link:hover .cart-icon-svg {
-    transform: scale(1.1);
-    fill: #2563eb;
-}
-
-.cart-count {
-    position: absolute;
-    top: -10px;
-    right: -15px;
-    background-color: #ef4444;
-    color: #ffffff !important;
-    font-size: 13px;
-    font-weight: 800;
-    height: 24px;
-    width: 24px;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border: 2.5px solid #ffffff;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
-
-/* --- BOTONES PREMIUM (AZUL DEGRADADO) --- */
-.nav-btn-professional {
-    background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%) !important;
-    color: #ffffff !important;
-    padding: 0 24px;
-    height: 42px;
-    border-radius: 50px;
-    text-decoration: none;
-    font-size: 13px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
     cursor: pointer;
-    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
-    white-space: nowrap;
-}
-
-.nav-btn-professional:hover {
-    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%) !important;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 15px rgba(37, 99, 235, 0.4);
-}
-
-/* --- MENÚ DESPLEGABLE ADMIN --- */
-.admin-menu-container {
-    position: relative;
     display: flex;
     align-items: center;
+    gap: 8px;
+    text-transform: uppercase;
+    transition: all 0.2s;
 }
 
-#menu-toggle { display: none; }
+.btn-about-custom:hover {
+    transform: translate(-3px, -3px);
+    box-shadow: 5px 5px 0px #000000;
+}
 
+/* Botón Ingresar XL */
+.nav-btn-professional {
+    background: var(--p-gradient) !important;
+    color: #ffffff !important;
+    padding: 0 45px; 
+    height: 75px;
+    border-radius: var(--radius-md);
+    box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+/* --- DROPDOWN --- */
 .admin-dropdown {
     position: absolute;
-    top: calc(100% + 12px);
+    top: calc(100% + 20px);
     right: 0;
-    background-color: #ffffff;
-    min-width: 200px;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    border-radius: 12px;
-    overflow: hidden;
-    border: 1px solid #f1f5f9;
-    z-index: 2100;
+    width: 350px;
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    padding: 20px;
+    z-index: 3000;
+    list-style: none;
     display: none;
-    padding: 6px 0;
 }
+#menu-toggle:checked ~ .admin-dropdown { display: block; }
 
-#menu-toggle:checked ~ .admin-dropdown {
-    display: block;
-    animation: fadeInScale 0.2s ease-out;
-}
+/* --- ESTRUCTURA --- */
+.layout-container { display: flex; min-height: calc(100vh - var(--nav-h)); }
+#sidebar { width: var(--sb-w); background: var(--white); border-right: 3px solid var(--border-color); position: fixed; top: var(--nav-h); bottom: 0; z-index: 1000; transition: transform 0.3s ease; }
+#main-content { flex: 1; margin-left: var(--sb-w); padding: 60px; transition: margin 0.3s ease; }
 
-@keyframes fadeInScale {
-    from { opacity: 0; transform: scale(0.95) translateY(-10px); }
-    to { opacity: 1; transform: scale(1) translateY(0); }
-}
-
-/* --- LAYOUT Y SIDEBAR (PERSISTENCIA Y ANIMACIÓN) --- */
-.layout-container {
-    display: flex;
-    min-height: calc(100vh - 70px);
-    position: relative;
-    overflow-x: hidden;
-}
-
-#sidebar {
-    width: 250px;
-    background-color: #ffffff;
-    border-right: 1px solid #e2e8f0;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: fixed;
-    top: 70px;
-    left: 0;
-    bottom: 0;
-    z-index: 1000;
-    transform: translateX(0); /* Estado inicial: Abierto */
-}
-
-/* --- CLASE CRÍTICA PARA EVITAR SALTO AL FILTRAR --- */
-/* Se aplica vía JS de pre-carga en el <html> o <body> */
-.sidebar-hidden-init #sidebar {
-    transition: none !important; /* Desactiva animación solo en la carga */
-    transform: translateX(-250px);
-}
-
-.sidebar-hidden-init #main-content {
-    transition: none !important;
-    margin-left: 0;
-}
-
-/* Cuando se activa el Toggle en sesión normal */
-#sidebar.collapsed {
-    transform: translateX(-250px);
-}
-
-#main-content {
-    flex: 1;
-    margin-left: 250px; /* Espacio para el sidebar */
-    padding: 30px;
-    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    min-width: 0;
-}
-
-#main-content.expanded {
-    margin-left: 0; /* Ocupa todo el ancho */
-}
-
-/* Adaptación móvil Sidebar */
+/* --- RESPONSIVO --- */
 @media (max-width: 768px) {
-    #sidebar { transform: translateX(-250px); }
-    #sidebar.collapsed { transform: translateX(0); }
-    #main-content { margin-left: 0; }
-    
-    .top-navbar { padding: 0 15px; }
-    .brand-name { font-size: 1rem; }
+    .top-navbar { height: 110px; padding: 0 20px; }
+    .nav-logo { width: 80px; height: 80px; }
+    .brand-name { display: none; }
+    /* Botón ingresar más chico en celular */
+    .nav-btn-professional { height: 45px !important; padding: 0 20px !important; font-size: 0.85rem !important; border-radius: 10px; }
+    .btn-about-custom { padding: 8px 12px !important; font-size: 0.7rem !important; border-width: 2px !important; }
+}
+
+/* --- NUEVO BOTÓN ACERCA DE (ESTILO AMARILLO RETRO) --- */
+.btn-about-retro {
+    background-color: #ffeb3b !important;
+    color: #000000 !important;
+    border: 3px solid #000000 !important;
+    font-weight: 800;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    transition: all 0.2s ease;
+    box-shadow: 4px 4px 0px #000000;
+}
+
+.btn-about-retro:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0px #000000;
+}
+
+.btn-about-retro:active {
+    transform: translate(0, 0);
+    box-shadow: 2px 2px 0px #000000;
+}
+
+/* --- AJUSTE MÓVIL ESPECÍFICO --- */
+@media (max-width: 768px) {
+    /* Hacemos el botón de ingresar más chico en celulares */
+    .nav-btn-professional {
+        padding: 0 15px !important;
+        height: 45px !important; /* Altura reducida */
+        font-size: 0.85rem !important;
+        gap: 10px !important;
+    }
+
+    .user-name-text {
+        font-size: 0.9rem !important;
+    }
+
+    /* Ajustamos el botón amarillo en celular */
+    .btn-about-retro {
+        padding: 8px 12px !important;
+        font-size: 0.75rem !important;
+        border: 2px solid #000000 !important;
+        box-shadow: 3px 3px 0px #000000;
+    }
+
+    .nav-right {
+        gap: 10px; /* Menos espacio entre botones */
+    }
 }
