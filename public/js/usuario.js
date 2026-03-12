@@ -18,6 +18,7 @@ const RegistroApp = {
     inputPinCompleto: document.getElementById("pin_completo"),
     txtDestinoVisual: document.getElementById("txt_destino"),
     txtContadorVisual: document.getElementById("contador_visual"),
+    checkingIndicator: document.getElementById("checking-user"),
   },
 
   init() {
@@ -31,8 +32,9 @@ const RegistroApp = {
 
     this.ui.mask?.addEventListener("input", (e) => {
       this.handleMask(e);
-      if (this.ui.final.value.length === 10) {
-        this.ejecutarChequeoExistencia(this.ui.final.value);
+      const valorLimpio = this.ui.final.value;
+      if (valorLimpio.length === 10) {
+        this.ejecutarChequeoExistencia(valorLimpio);
       } else {
         this.bloquearPasosSiguientes();
       }
@@ -42,6 +44,8 @@ const RegistroApp = {
       const email = this.ui.emailInput.value.trim();
       if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         this.ejecutarChequeoExistencia(email);
+      } else if (email.length > 0) {
+        this.bloquearPasosSiguientes();
       }
     });
 
@@ -69,58 +73,36 @@ const RegistroApp = {
   },
 
   async procesarRegistroFinal() {
-    // 1. Captura de valores directa del DOM para evitar errores de referencia
+    // Definición clara de variables para evitar ReferenceError
     const nombre = document.getElementById("nombre")?.value.trim();
     const pass = this.ui.passInput.value;
     const metodo = this.ui.radioWs.checked ? "ws" : "email";
-
-    // Capturamos el destino (celular limpio o email)
-    const celular = this.ui.final.value; // El valor sin ( ) ni -
+    const celular = this.ui.final.value; // Aseguramos que celular esté definido aquí
     const email = this.ui.emailInput.value.trim();
 
-    // 2. Validación previa en el Frontend
     if (!nombre) {
-      return Swal.fire(
-        "Campo requerido",
-        "Por favor, ingresa tu nombre completo.",
-        "warning"
-      );
+      return Swal.fire("Campo requerido", "Por favor, ingresa tu nombre completo.", "warning");
     }
 
     if (metodo === "ws" && celular.length < 10) {
-      return Swal.fire(
-        "WhatsApp inválido",
-        "Por favor, ingresa un número de teléfono completo.",
-        "warning"
-      );
+      return Swal.fire("WhatsApp inválido", "Por favor, ingresa un número de teléfono completo.", "warning");
     }
 
     if (metodo === "email" && !email.includes("@")) {
-      return Swal.fire(
-        "Email inválido",
-        "Por favor, ingresa un correo electrónico válido.",
-        "warning"
-      );
+      return Swal.fire("Email inválido", "Por favor, ingresa un correo electrónico válido.", "warning");
     }
 
     if (pass.length < 6) {
-      return Swal.fire(
-        "Contraseña corta",
-        "La contraseña debe tener al menos 6 caracteres.",
-        "warning"
-      );
+      return Swal.fire("Contraseña corta", "La contraseña debe tener al menos 6 caracteres.", "warning");
     }
 
-    // 3. Estado de carga en el botón
     this.setLoading(true);
 
     try {
-      // 4. Envío de la petición
-      const response = await fetch("/registrar", {
+      // Sincronizado con la nueva ruta de tu backend
+      const response = await fetch("/registrar_usuario", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           nombre,
           celular,
@@ -133,14 +115,12 @@ const RegistroApp = {
       const result = await response.json();
 
       if (response.ok && result.success) {
-        // ÉXITO: Sincronizamos los datos con el Modal
         this.ui.txtDestinoVisual.innerText = result.destino;
         this.ui.inputDestino.value = result.destino;
         this.ui.inputMetodo.value = result.metodo;
         this.ui.inputIntentos.value = result.intentos;
         this.ui.txtContadorVisual.innerText = result.intentos;
 
-        // Abrimos modal y damos foco al primer input del PIN
         this.ui.modal.classList.add("active");
         setTimeout(() => {
           if (this.ui.pins[0]) this.ui.pins[0].focus();
@@ -154,11 +134,9 @@ const RegistroApp = {
           showConfirmButton: false,
         });
       } else {
-        // ERROR del servidor (aquí cae el 400 con el mensaje de "Usuario ya existe")
         throw new Error(result.error || "Error desconocido en el registro");
       }
     } catch (error) {
-      // Restauramos el botón y mostramos el error real
       this.setLoading(false);
       console.error("Detalle del error:", error);
       Swal.fire("Error en el registro", error.message, "error");
@@ -170,7 +148,6 @@ const RegistroApp = {
       .map((i) => i.value)
       .join("");
     this.ui.inputPinCompleto.value = pinValue;
-    // Validación automática al completar los 4 dígitos
     if (pinValue.length === 4) this.validarPinFetch();
   },
 
@@ -195,6 +172,7 @@ const RegistroApp = {
       const result = await response.json();
 
       if (result.success) {
+        // Si el servidor te devolviera un token/session aquí, podrías guardarlo.
         this.ui.modal.classList.remove("active");
         Swal.fire({
           icon: "success",
@@ -210,11 +188,8 @@ const RegistroApp = {
         this.ui.pins[0].focus();
 
         if (result.agotado) {
-          Swal.fire(
-            "Agotado",
-            "Registro eliminado por seguridad.",
-            "error"
-          ).then(() => (window.location.href = "/"));
+          Swal.fire("Agotado", "Registro eliminado por seguridad.", "error")
+          .then(() => (window.location.href = "/"));
         } else {
           Swal.fire("PIN Incorrecto", `Te quedan ${nuevos} intentos.`, "error");
         }
@@ -226,11 +201,13 @@ const RegistroApp = {
 
   handleMask(e) {
     let v = e.target.value.replace(/\D/g, "");
-    if (v.length > 0)
-      e.target.value = `(${v.substring(0, 2)}) ${v.substring(
-        2,
-        6
-      )}-${v.substring(6, 10)}`;
+    if (v.length > 10) v = v.substring(0, 10);
+    if (v.length > 0) {
+      let formatted = `(${v.substring(0, 2)}`;
+      if (v.length > 2) formatted += `) ${v.substring(2, 6)}`;
+      if (v.length > 6) formatted += `-${v.substring(6, 10)}`;
+      e.target.value = formatted;
+    }
     this.ui.final.value = v;
   },
 
@@ -240,11 +217,9 @@ const RegistroApp = {
     this.ui.wrapEmail.style.display = isWs ? "none" : "block";
   },
 
-  // La función de toggle
   togglePassword() {
     const isPass = this.ui.passInput.type === "password";
     this.ui.passInput.type = isPass ? "text" : "password";
-    // Cambiamos el icono según el estado
     this.ui.btnToggle.innerText = isPass ? "🙈" : "👁️";
   },
 
@@ -254,13 +229,18 @@ const RegistroApp = {
   },
 
   async ejecutarChequeoExistencia(valorId) {
+    if (this.ui.checkingIndicator) this.ui.checkingIndicator.style.display = "flex";
+    this.bloquearPasosSiguientes();
+
     try {
       const res = await fetch("/verificar-usuario-existente", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ codigo: valorId }),
       });
+      
       const data = await res.json();
+      
       if (data.existe) {
         this.bloquearPasosSiguientes();
         Swal.fire("Aviso", "Este usuario ya está registrado.", "info");
@@ -269,28 +249,38 @@ const RegistroApp = {
         this.ui.btnRegistrar.disabled = false;
       }
     } catch (e) {
-      console.error(e);
+      console.error("Error en la verificación:", e);
+    } finally {
+      if (this.ui.checkingIndicator) this.ui.checkingIndicator.style.display = "none";
     }
-  },
+  }
 };
+
+// --- Funciones Globales ---
 
 document.addEventListener("DOMContentLoaded", () => RegistroApp.init());
 
 function validarRegistro(event) {
-  if (event) event.preventDefault(); // Blindaje extra contra refrescos
+  if (event) event.preventDefault();
   RegistroApp.procesarRegistroFinal();
 }
+
 function enviarPin() {
   RegistroApp.validarPinFetch();
 }
+
 async function cancelarRegistro() {
   const destino = document.getElementById("destino_hidden").value;
   if (destino) {
-    await fetch("/limpiar-registro-fallido", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ celular: destino }),
-    });
+    try {
+      await fetch("/limpiar-registro-fallido", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ celular: destino }),
+      });
+    } catch (e) {
+      console.error("Error al cancelar:", e);
+    }
   }
   window.location.href = "/usuario";
 }

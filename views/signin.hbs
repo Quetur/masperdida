@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Acceso - Mascota Perdida</title>
-    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    {{!-- Tu archivo CSS externo --}}
     <link rel="stylesheet" href="/css/signin.css">
 </head>
 <body>
@@ -20,7 +17,7 @@
         <p class="subtitle-acceso">Acceso</p>
     </div>
 
-    <form id="formlogin" method="post" action="/login">
+    <form id="formlogin">
         <div class="mb-3">
             <label class="form-label">CELULAR O EMAIL</label>
             <div class="input-wrapper">
@@ -37,34 +34,39 @@
             </div>
         </div>
 
-        <button type="button" class="btn-submit" onclick="ingresar()">INGRESAR</button>
-        <a href="#" class="link-recuperar" onclick="abrirRecuperacion()">¿Olvidaste tu contraseña?</a>
+        <button type="submit" class="btn-submit">INGRESAR</button>
+
+        <div class="text-center mt-3">
+            <a href="#" class="forgot-link" onclick="abrirModalRecuperar()">¿Olvidaste tu contraseña?</a>
+        </div>
     </form>
 
     <div class="register-section">
-        <p>¿No tienes una cuenta?</p>
-        <a href="/registro" class="btn-register">CREAR CUENTA NUEVA</a>
+        <p>¿No tienes cuenta?</p>
+        <a href="/registro" class="btn-register">REGISTRARME</a>
     </div>
 </div>
 
-{{!-- MODALES --}}
-<div id="modal-recuperar" class="modal-overlay">
+<div id="modalRecuperar" class="modal-overlay">
     <div class="modal-content">
-        <h3>Recuperar Acceso</h3>
-        <p>Ingresa tu celular o email registrado para enviarte un PIN.</p>
-        <div class="input-wrapper mb-3">
-            <input type="text" id="destino_recuperar_mask" class="form-control-custom" placeholder="Dato de contacto">
-            <input type="hidden" id="destino_recuperar_final">
+        <h3>Recuperar cuenta</h3>
+        <p>Ingresá tu Email o WhatsApp para recibir un PIN de seguridad.</p>
+        <div class="mb-4 text-start">
+            <label class="form-label">DESTINO</label>
+            <div class="input-wrapper">
+                <input type="text" id="destino_recuperar_mask" class="form-control-custom" placeholder="Email o Celular">
+                <input type="hidden" id="destino_recuperar_final">
+            </div>
         </div>
-        <button type="button" class="btn-submit" onclick="enviarPinRecuperacion()">ENVIAR CÓDIGO</button>
-        <button type="button" onclick="cerrarRecuperacion()" class="btn-cancelar">Cancelar</button>
+        <button type="button" class="btn-submit" onclick="solicitarPinRecuperacion()">ENVIAR PIN</button>
+        <button type="button" class="btn-cancelar" onclick="cerrarModal('#modalRecuperar')">Volver</button>
     </div>
 </div>
 
 <div id="modalPIN" class="modal-overlay">
     <div class="modal-content">
         <h3>Verifica tu Identidad</h3>
-        <p>Enviamos un código a: <strong id="txt_destino"></strong></p>
+        <p>Enviamos un código a: <strong id="txt_destino_rec"></strong></p>
         <div class="pin-container">
             <input type="text" maxlength="1" class="pin-in" inputmode="numeric">
             <input type="text" maxlength="1" class="pin-in" inputmode="numeric">
@@ -74,44 +76,29 @@
         <input type="hidden" id="pin_completo">
         <input type="hidden" id="intentos_input" value="5">
         <input type="hidden" id="destino_hidden">
-        <p class="intentos-text">Te quedan <span id="contador_visual">5</span> intentos.</p>
-        <button type="button" onclick="procesarValidacionPin()" class="btn-submit">VALIDAR CÓDIGO</button>
+        <button type="button" class="btn-submit" onclick="validarPinRecuperacion()">VALIDAR CÓDIGO</button>
+        <button type="button" class="btn-cancelar" onclick="cerrarModal('#modalPIN')">Cancelar</button>
     </div>
 </div>
 
-<div id="modal-reset-password" class="modal-overlay">
+<div id="modalNuevaPass" class="modal-overlay">
     <div class="modal-content">
         <h3>Nueva Contraseña</h3>
-        <p>Crea una nueva contraseña de acceso.</p>
-        
         <div class="text-start mb-3">
             <label class="form-label">CONTRASEÑA NUEVA</label>
-            <div class="input-wrapper">
-                <input type="password" id="nueva_pass" class="form-control-custom" placeholder="Mínimo 6 caracteres">
-                <button type="button" class="btn-toggle-eye toggle-pass" data-target="#nueva_pass">👁️</button>
-            </div>
+            <input type="password" id="nueva_pass" class="form-control-custom">
         </div>
-
         <div class="text-start mb-4">
-            <label class="form-label">CONFIRMAR CONTRASEÑA</label>
-            <div class="input-wrapper">
-                <input type="password" id="confirmar_pass" class="form-control-custom" placeholder="Repite la contraseña">
-                <button type="button" class="btn-toggle-eye toggle-pass" data-target="#confirmar_pass">👁️</button>
-            </div>
-            <div id="msg-error-pass" class="text-error" style="display: none;">
-                ❌ Las contraseñas no coinciden
-            </div>
+            <label class="form-label">CONFIRMAR</label>
+            <input type="password" id="confirmar_pass" class="form-control-custom">
+            <div id="msg-error-pass" style="display:none; color:red; font-size:12px;">❌ No coinciden</div>
         </div>
-
         <button type="button" class="btn-submit" onclick="confirmarCambioFinal()">ACTUALIZAR Y ENTRAR</button>
     </div>
 </div>
 
-{{!-- Scripts --}}
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-{{!-- Tu archivo JS externo --}}
 <script src="/js/signin.js"></script>
-
 </body>
 </html>

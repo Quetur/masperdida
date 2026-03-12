@@ -17,6 +17,21 @@ router.use("/", mascotaRoutes);
 router.use("/", categoriaRoutes);
 router.use("/", usuario);
 
+// Ruta principal /home
+router.get('/home', (req, res) => {
+    // Verificamos si existe la sesión del usuario
+    if (req.session && req.session.user) {
+        // Renderiza el archivo home.hbs pasándole los datos del usuario
+        res.render('home', {
+            user: req.session.user,
+            title: 'Inicio - Mascota Perdida'
+        });
+    } else {
+        // Si no hay sesión, lo mandamos al login (signin)
+        res.redirect('/signin');
+    }
+});
+
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com", // Para pruebas, usa ethereal.email
   port: 587,

@@ -33,46 +33,81 @@ const upload = multer({
 });
 
 router.get("/mascotas", async (req, res) => {
-  console.log("GET /mascotas con filtros:", req.query);
+  console.log("-----------------------------------------");
+  console.log("📥 GET /mascotas con filtros:", req.query);
+  
   try {
-    // 1. Obtener Categorías Y Tipos para el Sidebar
-    const [categorias] = await pool.execute(
-      "SELECT id_categoria, des FROM categoria"
-    );
+    // 1. Obtener datos para el Sidebar
+    const [categorias] = await pool.execute("SELECT id_categoria, des FROM categoria");
     const [tipos] = await pool.execute("SELECT id_tipo, des FROM tipo");
 
-    // 2. Construir la consulta de mascotas dinámicamente
-    let sql = "SELECT * FROM mascota WHERE 1=1";
+    // 2. Construir consulta con JOINs (Igual que en el Home)
+    let sql = `SELECT 
+                m.*, 
+                c.des AS cat_des, 
+                d.des AS tipo_des, 
+                e.des AS raza_des,
+                u.username AS dueño_nombre,
+                u.id AS contacto_id,
+                u.barrio AS dueño_barrio
+              FROM mascota m 
+              INNER JOIN categoria c ON c.id_categoria = m.id_categoria 
+              INNER JOIN tipo d ON d.id_tipo = m.id_tipo  
+              INNER JOIN raza e ON e.id_raza = m.id_raza 
+              INNER JOIN users u ON u.id = m.id_usuario
+              WHERE m.visible = 1`;
+    
     const params = [];
 
-    // Recorremos los parámetros de la URL
+    // Filtros dinámicos
     Object.keys(req.query).forEach((key) => {
-      // Si empieza con 'f' -> Filtro por Categoría
       if (key.startsWith("f")) {
         const idCategoria = key.substring(1);
-        sql += " AND id_categoria = ?";
+        sql += " AND m.id_categoria = ?";
         params.push(idCategoria);
       }
-      // Si empieza con 't' -> Filtro por Tipo (Perro, Gato, etc.)
       if (key.startsWith("t")) {
         const idTipo = key.substring(1);
-        sql += " AND id_tipo = ?";
+        sql += " AND m.id_tipo = ?";
         params.push(idTipo);
       }
     });
 
     const [rows] = await pool.execute(sql, params);
+    console.log(`✅ Resultados encontrados: ${rows.length}`);
 
-    // 3. Renderizar pasando todos los datos necesarios
+    // 3. Formatear datos para la vista (Fecha y Seguridad)
+    const mascotasFormateadas = rows.map((m) => {
+      const fechaBase = m.fecha_suceso || new Date();
+      const fecha = new Date(fechaBase);
+      
+      let fechaLarga = fecha.toLocaleDateString('es-AR', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      });
+
+      // Limpiamos formato para: "lunes 12 marzo 2026"
+      fechaLarga = fechaLarga.replace(/ de /g, ' ').replace(/,/g, '');
+
+      return {
+        ...m,
+        fecha_formateada: fechaLarga
+      };
+    });
+
+    // 4. Renderizar pasando todo el contexto
     res.render("home", {
-      mascotas: rows,
+      mascotas: mascotasFormateadas,
       categorias: categorias,
-      tipos: tipos, // <--- Nueva variable para el Sidebar
+      tipos: tipos,
       filtros: req.query,
     });
+
   } catch (err) {
-    console.error("Error en GET /mascotas:", err);
-    res.status(500).send(`Error: ${err.message}`);
+    console.error("❌ Error en GET /mascotas:", err);
+    res.status(500).send(`Error interno: ${err.message}`);
   }
 });
 
