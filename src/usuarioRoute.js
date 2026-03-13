@@ -383,5 +383,87 @@ router.post("/login", async (req, res, next) => {
     }
 });
 
+router.get('/perfil/editar', async (req, res) => {
+    console.log("entro en editar perfil",   req.session.user );
+
+    // 1. Verificamos si el usuario está logueado
+    // Asegúrate de que req.session.userId contenga el valor que guardaste en el login
+  if (!req.session.user) {
+        console.log("Sesión no encontrada, redirigiendo a signin...");
+        return res.redirect('/signin');
+    }
+
+    try {
+        // 2. Extraemos el ID del objeto user
+        const userId = req.session.user.id; 
+
+        // 3. Consulta a la tabla 'users' con tus campos reales
+        const [rows] = await pool.query(
+            'SELECT username, id, mail FROM users WHERE id = ?', 
+            [userId]
+        );
+
+        if (rows.length > 0) {
+            const row = rows[0];
+            
+            // Mapeamos para que el HBS reciba lo que espera
+            const usuarioParaVista = {
+                nombre: row.username,
+                celular: row.id,
+                email: row.mail,
+                identificador: row.id // Usamos el celular como ID visual
+            };
+
+            res.render('usuario', { 
+                editMode: true, 
+                usuario: usuarioParaVista,
+                title: 'Editar mi Perfil'
+            });
+        } else {
+            res.redirect('/');
+        }
+    } catch (error) {
+        console.error("Error al cargar perfil:", error);
+        res.status(500).send("Error interno");
+    }
+});
+
+router.post('/api/perfil/actualizar', async (req, res) => {
+    // 1. Validamos usando req.session.user (según tu configuración)
+    if (!req.session.user) {
+        return res.status(401).json({ error: 'No autorizado' });
+    }
+
+    // 2. Extraemos los datos del body y el ID de la sesión
+    const { nombre, pass, email } = req.body; 
+    const userId = req.session.user.id; // El '1151260188' que mencionaste
+
+    try {
+        if (pass && pass.trim().length >= 6) {
+            // CASO A: Actualiza nombre, mail y password (en la tabla 'users')
+            // Nota: Si usas bcrypt para las contraseñas, recordá hashearla antes.
+            await pool.query(
+                'UPDATE users SET username = ?, mail = ?, password = ? WHERE id = ?', 
+                [nombre, email, pass, userId]
+            );
+        } else {
+            // CASO B: Solo actualiza nombre y mail
+            await pool.query(
+                'UPDATE users SET username = ?, mail = ? WHERE id = ?', 
+                [nombre, email, userId]
+            );
+        }
+
+        // 3. ACTUALIZACIÓN CRÍTICA: Sincronizamos la sesión con el nuevo nombre
+        // Esto hace que el nombre en el menú desplegable cambie sin refrescar sesión.
+        req.session.user.nombre = nombre;
+
+        res.json({ success: true, message: 'Perfil actualizado correctamente' });
+    } catch (error) {
+        console.error("Error al actualizar en tabla users:", error);
+        res.status(500).json({ success: false, error: 'Error al guardar los datos en la base de datos' });
+    }
+});
+
 
 export default router;

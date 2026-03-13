@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{title}}</title>
+    <title>{{#if editMode}}Editar Perfil{{else}}{{title}}{{/if}}</title>
     <link rel="stylesheet" href="/css/usuario.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 </head>
@@ -15,62 +15,88 @@
         <header class="brand-header">
             <h1>Mascotas<span>Perdidas</span></h1>
             <div class="divider"></div>
-            <p>Registro de Comunidad</p>
+            <p>{{#if editMode}}Configuración de mi Perfil{{else}}Registro de Comunidad{{/if}}</p>
         </header>
 
         <section class="registration-form">
             <div class="input-wrapper">
                 <label class="form-label" for="nombre">Nombre Completo</label>
-                <input type="text" id="nombre" class="form-control-custom" placeholder="Ej. Juan Pérez" required>
+                <input type="text" id="nombre" class="form-control-custom" placeholder="Ej. Juan Pérez" 
+                    value="{{#if editMode}}{{usuario.nombre}}{{/if}}" required>
             </div>
 
-            <div class="input-wrapper">
-                <label class="form-label">Validar cuenta por:</label>
-                <div class="contact-selector">
-                    <input type="radio" name="metodo_contacto" id="opt_ws" value="ws" checked style="display: none;">
-                    <label for="opt_ws" class="contact-btn"><span>📱 WhatsApp</span></label>
-
-                    <input type="radio" name="metodo_contacto" id="opt_email" value="email" style="display: none;">
-                    <label for="opt_email" class="contact-btn"><span>📧 Email</span></label>
+            {{#if editMode}}
+                <div class="input-wrapper">
+                    <label class="form-label">Identificador de cuenta</label>
+                    <input type="text" class="form-control-custom" 
+                        value="{{usuario.identificador}}" 
+                        disabled style="background: #f1f5f9; color: #64748b; cursor: not-allowed; border-color: #e2e8f0;">
+                    <small style="font-size: 11px; color: #94a3b8; margin-top: 5px; display: block;">
+                        El contacto verificado no puede cambiarse.
+                    </small>
                 </div>
-            </div>
+            {{else}}
+                <div class="input-wrapper">
+                    <label class="form-label">Validar cuenta por:</label>
+                    <div class="contact-selector">
+                        <input type="radio" name="metodo_contacto" id="opt_ws" value="ws" checked style="display: none;">
+                        <label for="opt_ws" class="contact-btn"><span>📱 WhatsApp</span></label>
 
-            <div id="wrapper_celular" class="input-wrapper">
-                <label class="form-label" for="celular_mask">Número de WhatsApp</label>
-                <input type="text" id="celular_mask" class="form-control-custom" placeholder="(11) 1234-5678"
-                    inputmode="numeric">
-                <input type="hidden" id="celular_final">
-            </div>
+                        <input type="radio" name="metodo_contacto" id="opt_email" value="email" style="display: none;">
+                        <label for="opt_email" class="contact-btn"><span>📧 Email</span></label>
+                    </div>
+                </div>
 
-            <div id="wrapper_email" class="input-wrapper" style="display: none;">
-                <label class="form-label" for="email">Correo Electrónico</label>
-                <input type="email" id="email" class="form-control-custom" placeholder="ejemplo@correo.com">
-            </div>
+                <div id="wrapper_celular" class="input-wrapper">
+                    <label class="form-label" for="celular_mask">Número de WhatsApp</label>
+                    <input type="text" id="celular_mask" class="form-control-custom" placeholder="(11) 1234-5678"
+                        inputmode="numeric">
+                    <input type="hidden" id="celular_final">
+                </div>
+
+                <div id="wrapper_email" class="input-wrapper" style="display: none;">
+                    <label class="form-label" for="email">Correo Electrónico</label>
+                    <input type="email" id="email" class="form-control-custom" placeholder="ejemplo@correo.com">
+                </div>
+            {{/if}}
 
             <div id="checking-user"
                 style="display: none; flex-direction: column; align-items: center; justify-content: center; padding: 15px; margin: 10px 0; background: rgba(243, 244, 246, 0.7); border-radius: 8px; border: 1px dashed #3498db;">
                 <div class="spinner-large"></div>
-                <span
-                    style="font-size: 1.1rem; font-weight: 700; color: #2c3e50; margin-top: 10px; font-family: 'Inter', sans-serif;">
+                <span style="font-size: 1.1rem; font-weight: 700; color: #2c3e50; margin-top: 10px; font-family: 'Inter', sans-serif;">
                     CHEQUEO DE EXISTENCIA...
                 </span>
             </div>
 
             <div class="input-wrapper">
-                <label class="form-label" for="pass">Contraseña</label>
+                <label class="form-label" for="pass">{{#if editMode}}Nueva Contraseña (Opcional){{else}}Contraseña{{/if}}</label>
                 <div class="password-wrapper">
-                    <input type="password" id="pass" class="form-control-custom" placeholder="Mínimo 6 caracteres"
-                        disabled>
+                    <input type="password" id="pass" class="form-control-custom" 
+                        placeholder="{{#if editMode}}Dejar vacío para mantener actual{{else}}Mínimo 6 caracteres{{/if}}"
+                        {{#unless editMode}}disabled{{/unless}}>
                     <button type="button" id="btn-toggle" class="btn-toggle-eye">👁️</button>
                 </div>
             </div>
 
-            <button type="button" id="btn-registrar" class="btn-submit" onclick="validarRegistro(event)" disabled>
-                REGISTRARME AHORA
-            </button>
+            {{#if editMode}}
+                <div style="display: flex; gap: 10px;">
+                    <button type="button" id="btn-actualizar" class="btn-submit" onclick="actualizarPerfil(event)" style="flex: 2;">
+                        GUARDAR CAMBIOS
+                    </button>
+                    <button type="button" class="btn-submit" onclick="window.location.href='/'" 
+                        style="flex: 1; background: #94a3b8; border-color: #94a3b8;">
+                        VOLVER
+                    </button>
+                </div>
+            {{else}}
+                <button type="button" id="btn-registrar" class="btn-submit" onclick="validarRegistro(event)" disabled>
+                    REGISTRARME AHORA
+                </button>
+            {{/if}}
         </section>
     </main>
 
+    {{#unless editMode}}
     <div id="modalPIN" class="modal-overlay">
         <div class="modal-content">
             <h3>Verifica tu Identidad</h3>
@@ -83,21 +109,46 @@
                 <input type="text" maxlength="1" class="pin-in" inputmode="numeric" pattern="[0-9]*">
             </div>
 
-            <input type="hidden" id="pin_completo">
-            <input type="hidden" id="intentos_input">
-            <input type="hidden" id="destino_hidden">
-            <input type="hidden" id="metodo_hidden">
-
             <p class="attempts-text">Te quedan <span id="contador_visual">5</span> intentos.</p>
 
             <button type="button" onclick="enviarPin()" class="btn-verify">VALIDAR CÓDIGO</button>
             <button type="button" class="btn-close" onclick="cancelarRegistro()">Cancelar</button>
         </div>
     </div>
+    {{/unless}}
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="/js/usuario.js"></script>
 
-</body>
+    {{#if editMode}}
+    <script>
+        // Lógica para guardar cambios de perfil
+        async function actualizarPerfil(e) {
+            const nombre = document.getElementById('nombre').value;
+            const pass = document.getElementById('pass').value;
 
+            if (!nombre) return Swal.fire('Atención', 'El nombre es obligatorio', 'warning');
+
+            try {
+                const response = await fetch('/api/perfil/actualizar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nombre, pass })
+                });
+
+                if (response.ok) {
+                    Swal.fire('¡Éxito!', 'Perfil actualizado correctamente', 'success')
+                        .then(() => window.location.href = '/');
+                } else {
+                    Swal.fire('Error', 'No se pudieron guardar los cambios', 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                Swal.fire('Error', 'Problema de conexión', 'error');
+            }
+        }
+    </script>
+    {{/if}}
+
+</body>
 </html>

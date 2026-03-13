@@ -6,7 +6,7 @@
     position: fixed; 
     inset: 0; 
     background: rgba(15, 23, 42, 0.9); 
-    z-index: 10000; /* Subido para estar sobre el mapa */
+    z-index: 10000; 
     justify-content: center; 
     align-items: center; 
     padding: 15px;
@@ -70,7 +70,6 @@
    OPTIMIZACIÓN MÓVIL (Lista Compacta)
    ========================================== */
 @media (max-width: 600px) {
-    /* 1. Listado modo lista horizontal */
     .product-grid {
         display: flex;
         flex-direction: column;
@@ -108,7 +107,6 @@
         text-overflow: ellipsis;
     }
 
-    /* Ocultamos extras para limpiar la vista */
     .description, .location-info { display: none !important; }
 
     .product-footer {
@@ -124,7 +122,6 @@
         color: #fff !important;
     }
 
-    /* 2. Modal Detalle en móvil (Vertical) */
     .modal-detalle {
         flex-direction: column;
         width: 100%;
@@ -143,6 +140,67 @@
     }
 
     .pop-col-info h2 { font-size: 22px !important; }
+}
+
+/* ==========================================
+   INTERACCIONES Y EFECTOS PRO (NUEVO)
+   ========================================== */
+
+/* Botón de Mapa en Header */
+.btn-mapa-home {
+    background: #2563eb; 
+    color: white; 
+    padding: 8px 18px; 
+    border-radius: 10px; 
+    cursor: pointer; 
+    border: none; 
+    font-weight: 800; 
+    display: flex; 
+    align-items: center; 
+    gap: 12px; 
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+}
+
+.btn-mapa-home img {
+    width: 32px; 
+    height: 32px; 
+    border-radius: 6px; 
+    object-fit: cover;
+    transition: transform 0.3s ease;
+    border: 1.5px solid rgba(255,255,255,0.2);
+}
+
+.btn-mapa-home:hover {
+    background: #1d4ed8;
+    box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.4);
+    transform: translateY(-2px);
+}
+
+.btn-mapa-home:hover img {
+    transform: scale(1.15) rotate(5deg);
+}
+
+/* Elevación de tarjetas de mascotas (Solo Escritorio) */
+@media (min-width: 601px) {
+    .product-card {
+        transition: all 0.3s ease;
+    }
+
+    .product-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        border-color: #3b82f6;
+    }
+
+    .product-card:hover .product-image img {
+        transform: scale(1.05);
+        filter: brightness(1.05);
+    }
+}
+
+.product-image img {
+    transition: transform 0.5s ease, filter 0.3s ease;
 }
 
 .hidden { display: none !important; }

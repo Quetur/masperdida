@@ -228,7 +228,7 @@ const RegistroApp = {
     this.ui.btnRegistrar.disabled = true;
   },
 
-  async ejecutarChequeoExistencia(valorId) {
+async ejecutarChequeoExistencia(valorId) {
     if (this.ui.checkingIndicator) this.ui.checkingIndicator.style.display = "flex";
     this.bloquearPasosSiguientes();
 
@@ -245,8 +245,17 @@ const RegistroApp = {
         this.bloquearPasosSiguientes();
         Swal.fire("Aviso", "Este usuario ya está registrado.", "info");
       } else {
+        // ACTIVACIÓN DE PASOS SIGUIENTES
         this.ui.passInput.disabled = false;
         this.ui.btnRegistrar.disabled = false;
+        
+        // --- EL CAMBIO ESTÁ AQUÍ ---
+        // Ponemos el foco automáticamente en la contraseña
+        setTimeout(() => {
+            this.ui.passInput.focus();
+        }, 100); 
+        // Usamos un pequeño timeout para asegurar que el navegador 
+        // procese el cambio de 'disabled' antes de intentar dar el foco.
       }
     } catch (e) {
       console.error("Error en la verificación:", e);
