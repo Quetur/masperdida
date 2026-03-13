@@ -64,7 +64,8 @@ app.use((req, res, next) => {
 // 6. RUTAS (Optimizada para evitar inyecciones y mejorar rendimiento)
 app.get("/", async (req, res) => {
   try {
-    const [promesaCategorias, promesaMascotas] = await Promise.all([
+    // Agregamos promesaTipos al Promise.all
+    const [promesaCategorias, promesaMascotas, promesaTipos] = await Promise.all([
       pool.execute("SELECT id_categoria, des FROM categoria"),
       (async () => {
         let sql = `SELECT 
@@ -81,49 +82,59 @@ app.get("/", async (req, res) => {
                     INNER JOIN raza e ON e.id_raza = m.id_raza 
                     INNER JOIN users u ON u.id = m.id_usuario
                     WHERE m.visible = 1`;
-        
+
         const params = [];
         Object.keys(req.query).forEach((key) => {
+          // Filtro por Categoría (f1, f2...)
           if (key.startsWith("f")) {
             const idCategoria = key.substring(1);
-            sql += " AND m.id_categoria = ?"; 
+            sql += " AND m.id_categoria = ?";
             params.push(idCategoria);
+          }
+          // NUEVO: Filtro por Tipo (t1, t2...)
+          if (key.startsWith("t")) {
+            const idTipo = key.substring(1);
+            sql += " AND m.id_tipo = ?";
+            params.push(idTipo);
           }
         });
 
         return pool.execute(sql, params);
       })(),
+      pool.execute("SELECT id_tipo, des FROM tipo"), // Consulta para los tipos
     ]);
 
     const [categorias] = promesaCategorias;
     const [rows] = promesaMascotas;
+    const [tipos] = promesaTipos; // <--- Ahora la variable 'tipos' existe
 
-    // Formateo de datos para la vista
+    // Formateo de datos para la vista (Mantenemos tu lógica intacta)
     const mascotasFormateadas = rows.map((m) => {
       const fechaBase = m.fecha_suceso || new Date();
       const fecha = new Date(fechaBase);
-      
-      let fechaLarga = fecha.toLocaleDateString('es-AR', {
-        weekday: 'long', 
-        day: 'numeric', 
-        month: 'long', 
-        year: 'numeric'
+
+      let fechaLarga = fecha.toLocaleDateString("es-AR", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
       });
-      
-      fechaLarga = fechaLarga.replace(/ de /g, ' ').replace(/,/g, '');
+
+      fechaLarga = fechaLarga.replace(/ de /g, " ").replace(/,/g, "");
 
       return {
         ...m,
-        fecha_formateada: fechaLarga
+        fecha_formateada: fechaLarga,
       };
     });
 
+    // Renderizado con todas las variables
     res.render("home", {
       mascotas: mascotasFormateadas,
       categorias: categorias,
+      tipos: tipos, // <--- Ahora se envía correctamente al sidebar
       filtros: req.query,
     });
-    
   } catch (err) {
     console.error("Error en Home:", err);
     res.status(500).send("Error interno del servidor");

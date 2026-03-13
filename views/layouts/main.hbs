@@ -15,15 +15,21 @@
 
     <script>
         (function () {
-            const isCollapsed = localStorage.getItem('sidebar_collapsed') === 'true';
+            // MODIFICACIÓN: Si no existe el valor, por defecto es 'true' (oculto)
+            const storageValue = localStorage.getItem('sidebar_collapsed');
+            const isCollapsed = storageValue === null ? true : storageValue === 'true';
+            
             if (isCollapsed) {
                 document.documentElement.setAttribute('data-sidebar', 'collapsed');
+                localStorage.setItem('sidebar_collapsed', 'true');
+            } else {
+                document.documentElement.setAttribute('data-sidebar', 'expanded');
             }
         })();
     </script>
 </head>
 
-<body class="{{#if isCollapsed}}sidebar-hidden-init{{/if}}">
+<body class="sidebar-logic">
 
     <header class="top-navbar">
         <div class="nav-left">
@@ -50,8 +56,7 @@
                     <li><a href="/mascotacambia"><i class="fas fa-paw"></i> Tus Mascotas</a></li>
                     <li><a href="/usuario"><i class="fas fa-user-edit"></i> Editar tu perfil</a></li>
                     <li class="menu-divider"></li>
-                    <li><a href="/logout" id="btnSalirMenu" class="logout-link"><i class="fas fa-sign-out-alt"></i>
-                            Salir</a></li>
+                    <li><a href="/logout" id="btnSalirMenu" class="logout-link"><i class="fas fa-sign-out-alt"></i> Salir</a></li>
                 </ul>
             </div>
             {{else}}
@@ -80,9 +85,9 @@
             const content = document.getElementById('main-content');
             const toggleBtn = document.getElementById('toggle-btn');
 
-            // 1. Manejo del Sidebar (Persistencia y Flecha Roja)
             if (sidebar && toggleBtn) {
-                const isCollapsed = localStorage.getItem('sidebar_collapsed') === 'true';
+                // Sincronizar UI con el atributo del root
+                const isCollapsed = document.documentElement.getAttribute('data-sidebar') === 'collapsed';
 
                 const setSidebarState = (collapsed) => {
                     if (collapsed) {
@@ -107,37 +112,14 @@
                 });
             }
 
-            // 2. Modal "Acerca de Nosotros" Estilo Amarillo/Negro
+            // Manejo de "Acerca de" (Elegí uno: SweetAlert o Redirección. Aquí dejo el modal pero podés cambiarlo)
             const btnAbout = document.getElementById('btnAbout');
             if (btnAbout) {
                 btnAbout.addEventListener('click', () => {
-                    Swal.fire({
-                        title: '<span style="color: #000">Acerca de nosotros</span>',
-                        icon: 'info',
-                        background: '#fff',
-                        html: `
-                            <p style="text-align: left; line-height: 1.6; color: #333;">
-                                <b>Ayudame a volver a casa</b> es un portal dedicado a la recuperación de mascotas perdidas. 
-                                Nuestra misión es conectar a la comunidad para que cada animalito pueda reencontrarse con su familia.
-                            </p>
-                        `,
-                        confirmButtonText: 'CERRAR',
-                        confirmButtonColor: '#ffeb3b',
-                        customClass: {
-                            confirmButton: 'btn-swal-retro'
-                        }
-                    });
-                    // Estilo dinámico para el botón del modal
-                    const swalBtn = document.querySelector('.btn-swal-retro');
-                    if (swalBtn) {
-                        swalBtn.style.color = '#000';
-                        swalBtn.style.border = '2px solid #000';
-                        swalBtn.style.fontWeight = '800';
-                    }
+                     window.location.href = '/about';
                 });
             }
 
-            // 3. Limpieza de sesión
             const btnSalir = document.getElementById('btnSalirMenu');
             if (btnSalir) {
                 btnSalir.addEventListener('click', () => {
@@ -146,15 +128,6 @@
                 });
             }
         });
-        
-        // Redirección a la nueva página Acerca de
-        const btnAbout = document.getElementById('btnAbout');
-        if (btnAbout) {
-            btnAbout.addEventListener('click', () => {
-                window.location.href = '/about';
-            });
-        }
     </script>
 </body>
-
 </html>
