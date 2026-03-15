@@ -30,9 +30,25 @@ const RegistroApp = {
     this.ui.radioWs?.addEventListener("change", () => this.toggleView());
     this.ui.radioEmail?.addEventListener("change", () => this.toggleView());
 
+    // Interceptamos el primer carácter para el cambio automático
+    this.ui.mask?.addEventListener("keydown", (e) => {
+      const isNumber = e.key >= '0' && e.key <= '9';
+      
+      // Si el campo está vacío y presionan un número
+      if (this.ui.mask.value === "" && isNumber) {
+        if (!this.ui.radioWs.checked) {
+          this.ui.radioWs.checked = true;
+          this.toggleView();
+          // El foco ya vuelve a 'mask' dentro de toggleView()
+        }
+      }
+    });
+
     this.ui.mask?.addEventListener("input", (e) => {
       this.handleMask(e);
       const valorLimpio = this.ui.final.value;
+      
+      // Chequeo automático para Argentina (10 dígitos)
       if (valorLimpio.length === 10) {
         this.ejecutarChequeoExistencia(valorLimpio);
       } else {
@@ -63,6 +79,34 @@ const RegistroApp = {
         }
       });
     });
+  },
+
+  // --- ACTUALIZACIÓN DE LA MÁSCARA ESPECÍFICA ---
+  handleMask(e) {
+    let valor = e.target.value;
+    // Extraemos solo los números
+    let soloNumeros = valor.replace(/\D/g, "");
+
+    // Limitamos a 10 dígitos (característica de celulares en Argentina)
+    soloNumeros = soloNumeros.substring(0, 10);
+
+    let formateado = "";
+    if (soloNumeros.length > 0) {
+      // Formato: (XX) XXXX - XXXX
+      formateado = "(" + soloNumeros.substring(0, 2);
+      if (soloNumeros.length > 2) {
+        formateado += ") " + soloNumeros.substring(2, 6);
+      }
+      if (soloNumeros.length > 6) {
+        formateado += " - " + soloNumeros.substring(6, 10);
+      }
+    }
+
+    // Actualizamos el input visual
+    e.target.value = formateado;
+    
+    // Guardamos el valor limpio para el backend (ej: 1170609536)
+    this.ui.final.value = soloNumeros; 
   },
 
   setLoading(isLoading) {
@@ -212,9 +256,15 @@ const RegistroApp = {
   },
 
   toggleView() {
-    const isWs = this.ui.radioWs?.checked;
+    const isWs = this.ui.radioWs.checked;
     this.ui.wrapCelular.style.display = isWs ? "block" : "none";
     this.ui.wrapEmail.style.display = isWs ? "none" : "block";
+
+    if (isWs) {
+      this.ui.mask.focus(); // <--- Esto es vital
+    } else {
+      this.ui.emailInput.focus();
+    }
   },
 
   togglePassword() {
