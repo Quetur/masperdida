@@ -64,10 +64,10 @@ app.use((req, res, next) => {
 // 6. RUTAS (Optimizada para evitar inyecciones y mejorar rendimiento)
 app.get("/", async (req, res) => {
   try {
-    // Agregamos promesaTipos al Promise.all
     const [promesaCategorias, promesaMascotas, promesaTipos] = await Promise.all([
       pool.execute("SELECT id_categoria, des FROM categoria"),
       (async () => {
+        // 1. Definimos la base SIN el order by
         let sql = `SELECT 
                         m.*, 
                         c.des AS cat_des, 
@@ -81,17 +81,15 @@ app.get("/", async (req, res) => {
                     INNER JOIN tipo d ON d.id_tipo = m.id_tipo  
                     INNER JOIN raza e ON e.id_raza = m.id_raza 
                     INNER JOIN users u ON u.id = m.id_usuario
-                    WHERE m.visible = 1 order by fecha_suceso desc`;
+                    WHERE m.visible = 1`;
 
         const params = [];
         Object.keys(req.query).forEach((key) => {
-          // Filtro por Categoría (f1, f2...)
           if (key.startsWith("f")) {
             const idCategoria = key.substring(1);
             sql += " AND m.id_categoria = ?";
             params.push(idCategoria);
           }
-          // NUEVO: Filtro por Tipo (t1, t2...)
           if (key.startsWith("t")) {
             const idTipo = key.substring(1);
             sql += " AND m.id_tipo = ?";
@@ -99,16 +97,18 @@ app.get("/", async (req, res) => {
           }
         });
 
+        // 2. Agregamos el ORDER BY al final de todo
+        sql += ` ORDER BY m.fecha_suceso DESC`;
+
         return pool.execute(sql, params);
       })(),
-      pool.execute("SELECT id_tipo, des FROM tipo"), // Consulta para los tipos
+      pool.execute("SELECT id_tipo, des FROM tipo"),
     ]);
 
     const [categorias] = promesaCategorias;
     const [rows] = promesaMascotas;
-    const [tipos] = promesaTipos; // <--- Ahora la variable 'tipos' existe
+    const [tipos] = promesaTipos;
 
-    // Formateo de datos para la vista (Mantenemos tu lógica intacta)
     const mascotasFormateadas = rows.map((m) => {
       const fechaBase = m.fecha_suceso || new Date();
       const fecha = new Date(fechaBase);
@@ -128,11 +128,10 @@ app.get("/", async (req, res) => {
       };
     });
 
-    // Renderizado con todas las variables
     res.render("home", {
       mascotas: mascotasFormateadas,
       categorias: categorias,
-      tipos: tipos, // <--- Ahora se envía correctamente al sidebar
+      tipos: tipos,
       filtros: req.query,
     });
   } catch (err) {
