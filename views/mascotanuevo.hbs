@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nueva Mascota</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <style>
+    #map {
+      height: 400px;
+      width: 100%;
+      border-radius: 12px;
+      display: block;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .leaflet-container img {
+      max-width: none !important;
+      max-height: none !important;
+    }
+  </style>
+</head>
+
+<body class="bg-gray-200 p-4 md:p-10 font-sans">
+  <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-300">
+
+    <div class="bg-blue-600 px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <i class="fas fa-plus-circle text-white text-xl"></i>
+        <h2 class="text-white font-bold text-xl tracking-wide">Publicar Nueva Mascota</h2>
+      </div>
+      <span id="step-indicator" class="text-blue-200 text-xs font-black uppercase tracking-tighter">Paso 1 de 2</span>
+    </div>
+
+    <div class="flex h-1.5 w-full bg-gray-100">
+      <div id="progress-bar" class="bg-yellow-400 w-1/2 transition-all duration-500"></div>
+    </div>
+
+    <form action="/mascota_nuevo_graba" method="POST" enctype="multipart/form-data" class="p-8" id="formMascota">
+
+      <div style="display: none;">
+        <input type="hidden" name="visible" value="1">
+        <input type="hidden" name="orden" value="1">
+        <input type="hidden" name="fecha" id="fecha_actual">
+        <input type="hidden" name="precio1" value="0">
+        <input type="hidden" name="id_usuario" value="{{userid}}">
+      </div>
+
+      <div id="step-1" class="space-y-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="md:col-span-2 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+            <label class="block text-[11px] font-extrabold text-blue-700 uppercase mb-2 tracking-widest">¿Qué le pasó a la mascota?</label>
+            <select name="id_categoria" id="id_categoria" class="w-full border border-blue-300 p-3.5 rounded-lg bg-blue-100 font-semibold outline-none focus:bg-white" required>
+              <option value="" disabled selected>-- Elija opción --</option>
+              {{#each cat}}<option value="{{this.id_categoria}}">{{this.des}}</option>{{/each}}
+            </select>
+          </div>
+
+          <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+            <label class="block text-[11px] font-extrabold text-blue-700 uppercase mb-2 tracking-widest">Tipo de mascota</label>
+            <select name="id_tipo" id="id_tipo" class="w-full border border-blue-300 p-3.5 rounded-lg bg-blue-100 font-semibold outline-none" required>
+              <option value="" disabled selected>-- Mascota --</option>
+              {{#each tipo}}<option value="{{this.id_tipo}}">{{this.des}}</option>{{/each}}
+            </select>
+          </div>
+
+          <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+            <label class="block text-[11px] font-extrabold text-blue-700 uppercase mb-2 tracking-widest">Raza</label>
+            <select name="id_raza" id="id_raza" class="w-full border border-blue-300 p-3.5 rounded-lg bg-blue-100 font-semibold outline-none disabled:opacity-50" required disabled>
+              <option value="" disabled selected>-- Raza --</option>
+              {{#each raza}}
+              <option value="{{this.id_raza}}" data-tipo="{{this.id_tipo}}" class="raza-option hidden">{{this.des}}</option>
+              {{/each}}
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-6 rounded-2xl border border-gray-200">
+          <div>
+            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-3 text-center tracking-widest">Sexo</label>
+            <div class="flex gap-3">
+              <label class="flex-1">
+                <input type="radio" name="sexo" value="Macho" class="hidden peer" required>
+                <div class="text-center p-3 border border-blue-300 rounded-xl cursor-pointer bg-blue-100 peer-checked:bg-blue-700 peer-checked:text-white font-bold text-sm">Macho</div>
+              </label>
+              <label class="flex-1">
+                <input type="radio" name="sexo" value="Hembra" class="hidden peer">
+                <div class="text-center p-3 border border-pink-300 rounded-xl cursor-pointer bg-pink-100 peer-checked:bg-pink-600 peer-checked:text-white font-bold text-sm">Hembra</div>
+              </label>
+            </div>
+          </div>
+          <div id="contenedor-fechas">
+            <div id="div_fecha_perdida">
+              <label class="block text-[10px] font-bold text-gray-500 uppercase mb-3 text-center tracking-widest">Fecha del Suceso</label>
+              <input name="fecha_perdida" id="input_fecha_perdida" type="date" class="w-full border border-blue-300 p-3 rounded-xl bg-blue-100 outline-none">
+            </div>
+          </div>
+        </div>
+
+        <div class="flex flex-col md:flex-row gap-8">
+          <div class="w-full md:w-1/2 flex flex-col items-center">
+            <div class="w-full aspect-square bg-blue-100 rounded-2xl border-2 border-dashed border-blue-300 flex items-center justify-center relative overflow-hidden">
+                <img id="img_preview" 
+                    src="/img/iconoperrogato.png" 
+                    class="w-full h-full object-contain p-6 transition-all duration-300" />
+
+                <div id="placeholder" class="hidden text-blue-400 text-center">
+                    <i class="fas fa-camera text-5xl mb-2"></i>
+                    <p class="text-[10px] font-black uppercase">Foto</p>
+                </div>
+            </div>
+            <button type="button" onclick="document.getElementById('foto2').click()" class="mt-4 w-full bg-blue-600 text-white font-bold py-2 rounded-full text-sm">Subir Foto</button>
+            <input type="file" name="foto2" id="foto2" accept="image/*" class="hidden" />
+          </div>
+
+          <div class="w-full md:w-1/2 space-y-4">
+              <div>
+                  <label class="block text-[11px] font-extrabold text-blue-700 uppercase mb-1.5 tracking-widest ml-1">Nombre</label>
+                  <input name="titulo" type="text" 
+                        class="w-full border border-blue-300 p-3.5 rounded-xl bg-blue-100 outline-none font-semibold focus:bg-white focus:ring-2 focus:ring-blue-400 transition-all" 
+                        placeholder="Nombre de la mascota" required>
+              </div>
+
+              <div>
+                  <label class="block text-[11px] font-extrabold text-blue-700 uppercase mb-1.5 tracking-widest ml-1">Descripción</label>
+                  <textarea name="des" rows="3" 
+                            class="w-full border border-blue-300 p-3.5 rounded-xl bg-blue-100 outline-none resize-none font-semibold focus:bg-white focus:ring-2 focus:ring-blue-400 transition-all" 
+                            placeholder="Color, Tamaño, Collar, otras señas particulares" required></textarea>
+              </div>
+
+              <div>
+                  <label class="block text-[11px] font-extrabold text-blue-700 uppercase mb-1.5 tracking-widest ml-1">Datos adicionales</label>
+                  <input name="nota" type="text" 
+                        class="w-full border border-blue-300 p-3.5 rounded-xl bg-blue-100 outline-none font-semibold focus:bg-white focus:ring-2 focus:ring-blue-400 transition-all" 
+                        placeholder="Ej: Se ofrece recompensa, es asustadizo, etc.">
+              </div>
+          </div>
+        </div>
+
+        <button type="button" onclick="changeStep(2)" class="w-full bg-blue-600 text-white font-black py-5 rounded-2xl shadow-lg uppercase tracking-widest hover:bg-blue-700 transition-all">Siguiente: Ubicación <i class="fas fa-arrow-right ml-2"></i></button>
+      </div>
+
+      <div id="step-2" class="hidden space-y-6">
+        <h3 class="text-xl font-bold text-gray-800 text-center">¿Dónde se perdió?</h3>
+        
+        <div class="bg-white rounded-2xl shadow-lg border-2 border-blue-200 overflow-hidden relative">
+          <div id="map"></div>
+        </div>
+
+        <input type="hidden" name="latitud" id="latitud">
+        <input type="hidden" name="longitud" id="longitud">
+
+        <div class="space-y-4 bg-gray-50 p-4 rounded-2xl border border-gray-200">
+            <div>
+                <label class="block text-xs font-black text-blue-600 uppercase mb-1">DIRECCION DETECTADA(podes editarla manualmente)</label>
+                <input type="text" id="ubicacion_calle" name="calle" class="w-full p-3 border-2 border-gray-100 rounded-xl outline-none focus:border-blue-500">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <input type="text" id="ubicacion_ciudad" name="ciudad" placeholder="Ciudad" class="p-3 border-2 border-gray-100 rounded-xl outline-none">
+                <input type="text" id="ubicacion_provincia" name="provincia" placeholder="Provincia" class="p-3 border-2 border-gray-100 rounded-xl outline-none">
+            </div>
+            <input type="hidden" id="ubicacion_pais" name="pais">
+        </div>
+
+        <div class="flex gap-4">
+          <button type="button" onclick="changeStep(1)" class="flex-1 bg-gray-300 text-gray-800 py-4 rounded-2xl font-bold uppercase text-sm">Volver</button>
+          <button type="submit" class="flex-[2] bg-blue-700 text-white font-black py-4 rounded-2xl uppercase shadow-xl">Grabar Publicación</button>
+        </div>
+      </div>
+
+    </form>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="/js/mascotanuevo.js"></script>
+</body>
+</html>

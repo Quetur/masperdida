@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificar Celular - Mascota Perdida</title>
+
+    <script src="https://cdn.jsdelivr.net"></script>
+    <link href="https://cdn.jsdelivr.net" rel="stylesheet">
+    <link rel="stylesheet" href="/css/usuario.css">
+
+    <style>
+        /* Fondo para centrar el contenido */
+        body {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content-custom {
+            max-width: 400px;
+            border-radius: 25px;
+            background: white;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .pin-in {
+            width: 45px;
+            height: 60px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 800;
+            border-radius: 12px;
+            border: 2px solid #ced4da;
+            transition: all 0.2s;
+        }
+
+        .pin-in:focus {
+            border-color: #0d6efd;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="modal-content-custom">
+        <div class="text-center">
+            <h2 class="fw-bold" style="color: #0d6efd;">🐾 Verifica tu celular</h2>
+            <div style="width: 40px; height: 3px; background: #0d6efd; margin: 10px auto; border-radius: 2px;"></div>
+            <p class="text-muted small">Hemos enviado un código al número:<br>
+                <strong id="display_celular">{{celular}}</strong>
+            </p>
+
+            <form id="formVerificar" method="POST" action="/verificar-codigo">
+                <!-- Pasamos el celular (ID) al servidor -->
+                <input type="hidden" name="celular" value="{{celular}}">
+
+                <div class="pin-container" style="display: flex; justify-content: center; gap: 10px; margin: 20px 0;">
+                    <input type="text" class="pin-in" maxlength="1" inputmode="numeric" required autofocus>
+                    <input type="text" class="pin-in" maxlength="1" inputmode="numeric" required>
+                    <input type="text" class="pin-in" maxlength="1" inputmode="numeric" required>
+                    <input type="text" class="pin-in" maxlength="1" inputmode="numeric" required>
+                </div>
+
+                <!-- Campo oculto donde se arma el PIN completo -->
+                <input type="hidden" name="codigo" id="pin_completo">
+
+                <button type="button" onclick="enviarPin()" class="btn-submit w-100" id="btn-verificar"
+                    style="background: #0d6efd; color: white; border: none; height: 50px; border-radius: 10px; font-weight: 700;">
+                    VERIFICAR AHORA
+                </button>
+            </form>
+
+            {{#if error}}
+            <div class="alert alert-danger mt-3 py-2 small">{{error}}</div>
+            {{/if}}
+        </div>
+    </div>
+
+    <script>
+        // Lógica para saltar entre cuadritos de PIN
+        const inputs = document.querySelectorAll('.pin-in');
+
+        inputs.forEach((input, idx) => {
+            input.addEventListener('input', (e) => {
+                // Solo permitir números
+                e.target.value = e.target.value.replace(/\D/g, "");
+
+                // Saltar al siguiente si hay valor
+                if (e.target.value && idx < inputs.length - 1) {
+                    inputs[idx + 1].focus();
+                }
+
+                // Actualizar el valor oculto final
+                let res = "";
+                inputs.forEach(i => res += i.value);
+                document.getElementById('pin_completo').value = res;
+            });
+
+            // Volver atrás con la tecla borrar
+            input.addEventListener('keydown', (e) => {
+                if (e.key === "Backspace" && !e.target.value && idx > 0) {
+                    inputs[idx - 1].focus();
+                }
+            });
+        });
+        document.addEventListener("DOMContentLoaded", function () {
+            const el = document.getElementById('display_celular');
+            let num = el.innerText.replace(/\D/g, ""); // Limpiamos por las dudas
+
+            if (num.length >= 10) {
+                // Formato: (XX) XXXX-XXXX
+                const formateado = `(${num.substring(0, 2)}) ${num.substring(2, 6)}-${num.substring(6, 10)}`;
+                el.innerText = formateado;
+            }
+        });
+        function enviarPin() {
+            const pin = document.getElementById('pin_completo').value;
+            if (pin.length < 4) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: '🐾 PIN incompleto',
+                    text: 'Por favor, ingresa los 4 dígitos enviados.',
+                    confirmButtonColor: '#0d6efd'
+                });
+                return;
+            }
+
+            document.getElementById('btn-verificar').disabled = true;
+            document.getElementById('btn-verificar').innerText = 'COMPROBANDO...';
+            document.getElementById('formVerificar').submit();
+        }
+    </script>
+
+</body>
+
+</html>

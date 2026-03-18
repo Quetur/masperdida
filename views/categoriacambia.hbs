@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Categorías</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com" />
+</head>
+
+<body class="bg-gray-50 font-sans antialiased">
+    <div class="container mx-auto px-4 py-8">
+
+        <!-- Header & Acciones -->
+        <div
+            class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+            <div class="relative w-full md:w-96">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                    <i class="fas fa-search"></i>
+                </span>
+                <input type="text" id="search"
+                    class="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                    placeholder="Buscar categoría..." />
+            </div>
+
+            <button onclick="nuevaCategoria()"
+                class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-lg transition-all shadow-lg flex items-center justify-center gap-2 transform active:scale-95">
+                <i class="fas fa-plus"></i> Nueva Categoría
+            </button>
+        </div>
+
+        <!-- Tabla de Categorías -->
+        <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse" id="tabla">
+                    <thead>
+                        <tr class="bg-gray-50 text-gray-600 uppercase text-xs font-bold tracking-wider">
+                            <th class="px-6 py-4 border-b">ID (Código)</th>
+                            <th class="px-6 py-4 border-b">Descripción</th>
+                            <th class="px-6 py-4 border-b text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        {{#each data}}
+                        <tr class="hover:bg-emerald-50/30 transition-colors">
+                            <!-- ID CATEGORIA -->
+                            <td class="px-6 py-4 font-mono text-sm font-bold text-blue-600">
+                                {{id_categoria}}
+                            </td>
+                            <!-- DESCRIPCION -->
+                            <td class="px-6 py-4 text-gray-800 font-medium">
+                                {{des}}
+                            </td>
+                            <!-- ACCIONES -->
+                            <td class="px-6 py-4 text-center">
+                                <div class="flex justify-center gap-3">
+                                    <a href="/categoriaeditar/{{id_categoria}}"
+                                        class="w-9 h-9 flex items-center justify-center text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white rounded-lg transition-all"
+                                        title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="/categoriaborrar/{{id_categoria}}"
+                                        onclick="return confirm('¿Eliminar categoría? Los mascotas asociados podrían dar error.')"
+                                        class="w-9 h-9 flex items-center justify-center text-red-600 bg-red-50 hover:bg-red-600 hover:text-white rounded-lg transition-all"
+                                        title="Borrar">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <script>
+        function nuevaCategoria() {
+            window.location.href = "/categorianueva";
+        }
+
+        $(document).ready(function () {
+            $("#search").on("keyup", function () {
+                var value = $(this).val().toLowerCase();
+                $("#tabla tbody tr").each(function () {
+                    var id = $(this).find("td").eq(0).text().toLowerCase();
+                    var descripcion = $(this).find("td").eq(1).text().toLowerCase();
+
+                    if (id.indexOf(value) > -1 || descripcion.indexOf(value) > -1) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

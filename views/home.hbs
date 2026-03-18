@@ -1,0 +1,191 @@
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="/css/home.css">
+
+<style>
+    #map-general {
+        height: 600px;
+        width: 100%;
+        background: #f8fafc;
+    }
+
+    #modal-mapa-general,
+    #detalle-pop-up {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.9);
+        z-index: 10000;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+
+    .modal-content-white {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    .custom-pet-icon {
+        transition: transform 0.2s ease;
+    }
+
+    .custom-pet-icon:hover {
+        transform: scale(1.2);
+        z-index: 1000 !important;
+    }
+</style>
+
+<section class="main-content-area">
+    <header class="content-header">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h1 style="color: #1e293b; font-weight: 800; letter-spacing: -0.5px;">Catálogo de Mascotas</h1>
+            
+            <button type="button" onclick="abrirMapaGeneral()" class="btn-mapa-home">
+                <img src="/img/iconomapa.jpg" alt="Mapa">
+                <span style="text-transform: uppercase; font-size: 14px; letter-spacing: 0.5px;">MAPA</span>
+            </button>
+        </div>
+
+        <div class="search-container">
+            <input type="text" id="search-input" placeholder="Buscar por nombre o categoría..."
+                style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd;">
+        </div>
+        <p>Mostrando <strong id="count">{{mascotas.length}}</strong> mascotas</p>
+    </header>
+
+    <div class="product-grid" id="product-grid"
+        style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
+        {{#each mascotas}}
+            <article class="product-card" data-title="{{this.titulo}}" data-category="{{this.cat_des}}" 
+                    style="display: flex; flex-direction: column; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background: white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); height: 100%;">
+                
+                <div style="padding: 10px 15px; background: #f8fafc; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: {{#if (eq this.cat_des 'Perdido')}}#ef4444{{else}}#10b981{{/if}}; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">
+                        {{this.cat_des}}
+                    </span>
+                    <span style="color: #2563eb; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">
+                        {{this.tipo_des}}
+                    </span>
+                </div>
+
+                <div class="product-image" style="width: 100%; aspect-ratio: 16/9; overflow: hidden; background-color: #f0f0f0;">
+                    <img src="{{#if this.foto2}}{{this.foto2}}{{else}}/img/placeholder.jpg{{/if}}" 
+                        alt="{{this.titulo}}" 
+                        style="width: 100%; height: 100%; object-fit: contain;"> 
+                </div>
+
+                <div class="product-info" style="padding: 15px; display: flex; flex-direction: column; flex-grow: 1; gap: 4px;">
+                    
+                    <div style="margin-bottom: 4px;">
+                        <span style="font-size: 10px; color: #94a3b8; font-weight: 700; text-transform: uppercase;">Nombre:</span>
+                        <h3 style="margin: 0; color: #1e293b; font-size: 1.3rem; line-height: 1.2; font-weight: 800;">
+                            {{this.titulo}}
+                        </h3>
+                    </div>
+
+                    <div style="margin-bottom: 8px;">
+                        <span style="font-size: 10px; color: #94a3b8; font-weight: 700; text-transform: uppercase;">Raza:</span>
+                        <p style="margin: 0; color: #475569; font-size: 14px; font-weight: 600;">
+                            {{this.raza_des}}
+                        </p>
+                    </div>
+
+                    <div style="margin-top: auto; padding-top: 10px; border-top: 1px dotted #e2e8f0;">
+                        <p style="margin: 0; font-size: 12px; color: #64748b; font-weight: 500;">
+                            📅 {{this.fecha_formateada}}
+                        </p>
+                    </div>
+                    
+                    <button type="button" class="btn-view" 
+                        onclick="mostrarPopUp(this)" 
+                        data-id="{{this.id_mascota}}"
+                        data-titulo="{{this.titulo}}"
+                        data-foto="{{#if this.foto2}}{{this.foto2}}{{else}}/img/placeholder.jpg{{/if}}"
+                        data-descripcion="{{this.des}}" 
+                        data-nota="{{this.nota}}"
+                        data-lat="{{this.latitud}}" 
+                        data-lng="{{this.longitud}}"
+                        data-direccion="{{this.direccion}}"
+                        data-usuario="{{this.id_usuario}}"
+                        data-sexo="{{this.sexo}}"
+                        data-raza="{{this.raza_des}}"
+                        data-tipo="{{this.tipo_des}}"
+                        style="width: 100%; padding: 12px; background: #2563eb; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 12px; font-size: 13px; text-transform: uppercase;">
+                        DATOS ADICIONALES
+                    </button>
+                </div>
+            </article> 
+        {{/each}}
+    </div>
+</section>
+
+<div id="modal-mapa-general">
+    <div class="modal-content-white" style="width: 95%; max-width: 1100px;">
+        <div style="padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee;">
+            <h3 style="margin:0;">📍 Mascotas en el mapa</h3>
+            <button onclick="cerrarMapaGeneral()" aria-label="Cerrar"
+                style="font-size: 30px; border: none; background: none; cursor: pointer;">&times;</button>
+        </div>
+        <div id="map-general"></div>
+    </div>
+</div>  
+
+<div id="detalle-pop-up">
+    <div class="modal-content-white" style="max-width: 500px; width: 90%; position: relative; overflow: visible; background: white; border-radius: 15px;">
+        
+        <div style="position: relative;">
+      <img id="pop-img" src="" 
+     style="width: 100%; height: 250px; object-fit: contain; background-color: #222; border-top-left-radius: 15px; border-top-right-radius: 15px; display: block;">
+            
+            <button onclick="cerrarPopUp()" aria-label="Cerrar"
+                style="position: absolute; 
+                       top: -20px; 
+                       right: -20px; 
+                       background: radial-gradient(circle, #ff4d4d 0%, #b30000 100%); 
+                       border-radius: 50%; 
+                       width: 45px; 
+                       height: 45px; 
+                       border: 3px solid #000; 
+                       color: white;
+                       cursor: pointer; 
+                       font-size: 30px;
+                       font-weight: bold;
+                       line-height: 1;
+                       display: flex;
+                       justify-content: center;
+                       align-items: center;
+                       box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+                       z-index: 20001;">
+                &times;
+            </button>
+        </div>
+        
+        <div style="padding: 20px;">
+            <h2 id="pop-titulo" style="margin: 0 0 10px 0;"></h2>
+            <div style="display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 10px; font-size: 12px;">
+                <span id="pop-categoria" style="background: #eee; padding: 2px 8px; border-radius: 4px;"></span>
+                <span id="pop-tipo" style="background: #e0f2fe; padding: 2px 8px; border-radius: 4px;"></span>
+                <span id="pop-sexo" style="background: #fef9c3; padding: 2px 8px; border-radius: 4px;"></span>
+                <span id="pop-raza" style="background: #f1f5f9; padding: 2px 8px; border-radius: 4px;"></span>
+            </div>
+            <p id="pop-descripcion" style="font-size: 14px; color: #444; margin-bottom: 10px;"></p>
+
+            <p style="font-size: 14px; margin-bottom: 5px;">
+                <strong>Contacto:</strong> <span id="pop-usuario" style="color: #2563eb; font-weight: bold;"></span>
+            </p>
+            <p id="pop-direccion" style="font-weight: bold; color: #444; font-size: 14px;"></p>
+
+            <div id="pop-nota-container"
+                style="background: #fffbeb; padding: 10px; border-radius: 8px; margin-top: 10px; display: none; border-left: 4px solid #f59e0b;">
+                <strong>Nota:</strong> <span id="pop-nota"></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="/js/home.js"></script>

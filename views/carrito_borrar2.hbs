@@ -1,0 +1,830 @@
+<body>
+  <!-- 1. Primero jQuery -->
+  <script src="https://code.jquery.com"></script>
+
+  <!-- SweetAlert2 CDN -->
+  <script src="https://cdn.jsdelivr.net"></script>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com">
+  <!-- CSS de Bootstrap 5.3.3 -->
+  <link href="https://cdn.jsdelivr.net" rel="stylesheet">
+
+  <!-- JS de Bootstrap 5.3.3 (opcional, ponlo antes de cerrar el </body>) -->
+  <script src="https://cdn.jsdelivr.net"></script>
+
+  <style>
+    :root {
+      --glass-bg: rgba(255, 255, 255, 0.95);
+      --primary-color: #2c3e50;
+      --accent-color: #27ae60;
+    }
+
+    body {
+      background-color: #eee;
+      padding: 20px;
+    }
+
+    .form-card {
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      max-width: 900px;
+      margin: auto;
+    }
+
+    /* Forzamos por si tienes algún CSS que los esté achicando */
+    .form-control {
+      width: 100% !important;
+    }
+
+    .section-title {
+      border-bottom: 2px solid #0d6efd;
+      padding-bottom: 10px;
+      margin-bottom: 25px;
+      color: #0d6efd;
+    }
+
+    .checkout-container {
+      max-width: 900px;
+      margin: 40px auto;
+    }
+
+    .form-card {
+      background: var(--glass-bg);
+      border: none;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+      padding: 30px;
+      margin-bottom: 30px;
+    }
+
+    .form-control,
+    .form-select {
+      background-color: #e3f2fd !important;
+      /* Un celeste suave */
+      border-color: #bbdefb;
+      /* Opcional: borde a juego */
+
+      padding: 12px 15px;
+      border-radius: 10px;
+      transition: all 0.3s;
+    }
+
+    /* Mantiene el fondo celeste incluso cuando el usuario escribe */
+    .form-control:focus {
+      background-color: #e3f2fd;
+      box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+
+    .table thead th {
+      background-color: #f8f9fa;
+      border-top: none;
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 1px;
+    }
+
+    .summary-box {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .btn-process {
+      background-color: var(--accent-color);
+      border: none;
+      border-radius: 10px;
+      padding: 15px;
+      font-weight: bold;
+      transition: transform 0.2s;
+    }
+
+    .btn-process:hover {
+      background-color: #219150;
+      transform: translateY(-2px);
+    }
+
+    .section-title {
+      font-weight: 700;
+      margin-bottom: 25px;
+      color: var(--primary-color);
+      border-left: 4px solid var(--accent-color);
+      padding-left: 15px;
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 10px;
+        /* Reducimos el espacio exterior */
+      }
+
+      .checkout-container {
+        margin: 10px auto;
+        width: 100%;
+      }
+
+      .form-card {
+        padding: 15px;
+        /* Menos espacio interno para que quepa el contenido */
+        margin-bottom: 20px;
+        border: 1px solid #e0e0e0;
+        /* Forzamos un borde visible */
+        border-radius: 10px;
+        overflow: hidden;
+        /* Evita que el contenido interno rompa el borde */
+      }
+
+      /* Ajuste para que la tabla no rompa el diseño */
+      .table-responsive {
+        border: 0;
+      }
+    }
+
+    /* Estilo para el spinner */
+    .spinner {
+      width: 25px !important;
+      height: 25px !important;
+      border: 4px solid rgba(255, 255, 255, 0.3) !important;
+      border-radius: 50% !important;
+      border-top-color: #fff !important;
+      animation: spin 0.8s linear infinite !important;
+    }
+
+    @keyframes spin {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+
+  <main class="checkout-container" class="content {{#if hideSidebar}}full-width{{else}}full-width expanded{{/if}}">
+    <h2 class="text-center mb-5 fw-bold">Finalizar Pedido</h2>
+
+    <div class="container">
+      <form id="procesar-datos" action="/send-email" method="POST">
+
+        <div class="form-card">
+          <h4 class="section-title">Datos de Entrega</h4>
+          <input style="width:200px; text-align:center;" name="fecha" id="fecha" hidden>
+          <input style="width:200px; text-align:center;" name="horalocal" id="horalocal" align="center" hidden>
+          <div class="row g-4">
+            <!-- Nombre -->
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Nombre Completo</label>
+              <input type="text" class="form-control" name="cliente" id="cliente" placeholder="Ej: Juan Pérez" required>
+            </div>
+
+            <!-- Celular -->
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Celular</label>
+              <input type="tel" class="form-control" name="cel" id="cel" placeholder="Cod. área sin 15" required>
+            </div>
+
+            <!-- Dirección -->
+            <div class="col-md-8">
+              <label class="form-label fw-semibold">Dirección de Envío</label>
+              <input type="text" class="form-control" name="direccion" id="direccion"
+                placeholder="Calle, número y departamento" required>
+            </div>
+
+            <!-- Localidad -->
+            <div class="col-md-4">
+              <label for="localidad" class="form-label fw-semibold">Zona / Localidad</label>
+              <input list="localidades-list" class="form-control" name="localidad" id="localidad"
+                placeholder="Seleccioná o escribí tu localidad...">
+              <datalist id="localidades-list">
+                <option value="Ituzaingo Norte">
+                <option value="Ituzaingo Sur">
+                <option value="Castelar Norte">
+                <option value="Castelar Sur">
+                <option value="Parque Leloir">
+                <option value="Padua">
+              </datalist>
+            </div>
+
+            <!-- Email -->
+            <div class="col-12">
+              <label class="form-label fw-semibold">Correo Electrónico</label>
+              <input type="email" class="form-control" name="correo" id="correo" placeholder="email@ejemplo.com"
+                required>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label fw-semibold">Sucursal de correo para entregar el pedido</label>
+              <input type="text" class="form-control" name="sucursal" id="sucursal"
+                placeholder="si lo desea indique sucursal de correo para entregar su pedido" required>
+            </div>
+
+            <!-- Notas -->
+            <div class="col-12">
+              <label class="form-label fw-semibold">Notas adicionales (Opcional)</label>
+              <textarea class="form-control" name="nota" id="nota" rows="2"
+                placeholder="Ej: Tocar timbre blanco, dejar en recepción..."></textarea>
+            </div>
+
+          </div>
+        </div>
+
+
+        <!-- Sección 2: Carrito -->
+        <div class="form-card">
+          <h4 class="section-title">Resumen de la Compra</h4>
+          <div class="table-responsive">
+            <table id="lista_compra" class="table align-middle" name="lista_compra">
+              <thead>
+                <tr>
+                  <th>Imagen</th>
+                  <th class="text-center">Cant.</th>
+                  <th class="text-right">Descripcion</th>
+                  <th class="text-end">Precio</th>
+                  <th class="text-end">Subtotal</th>
+                  <th class="text-center">Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Se llena con JS -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Totales (Manteniendo estructura de tabla original) -->
+          <table border="0" align="center">
+            <tr>&nbsp</tr>
+            <tr>&nbsp</tr>
+            <tr>&nbsp</tr>
+            <tr>
+              <td style="width:5%; text-align: right;"></td>
+              <td style="width:5%; text-align: right;"></td>
+              <td style="width:25%; text-align: right;">
+                <label class="col-form-label h2">Total Contado :</label>
+              </td>
+
+
+              <td class="text-end" style="padding-right: 15px; width: 20%;">
+                <input id="total" name="total" hidden>
+                <input type="text" id="totalgralstr" name="totalgralstr" class="form-control-plaintext fw-bold px-2"
+                  style="font-size: 1.2rem; width: 100%; text-align: right !important; background-color: #fff3cd; border-radius: 5px;"
+                  value="0" readonly>
+                <input id="articulos" name="articulos" hidden=false></input>
+              </td>
+            </tr>
+
+          </table>
+      </form>
+    </div>
+
+    <!-- Botones de Acción -->
+    <table style="width: 100%; border-collapse: separate; border-spacing: 15px 0;" class="mb-5 mt-4">
+      <tr>
+        <td>&nbsp</td>
+      </tr>
+      <tr>
+        <td>&nbsp</td>
+      </tr>
+      <tr>
+        <td>&nbsp</td>
+      </tr>
+      <tr>
+        <td>&nbsp</td>
+      </tr>
+      <tr>
+        <td style="width: 50%; background-color: #b62d38; border-radius: 10px; text-align: center;">
+          <!-- AHORA SÍ SERÁ ROJO -->
+          <button type="button" onclick="vaciarCarrito()" id="vaciar-carrito" name="vaciar-carrito"
+            style="background-color: #dc3545; color: white; border: none; border-radius: 10px; font-weight: bold; font-size: 1.4rem; padding: 10px 20px; width: 100%;">
+            Vaciar Carrito
+          </button>
+        </td>
+        <td style="width: 50%;">
+          <!-- BOTÓN VERDE -->
+          <button type="submit" class="btn btn-lg w-100 btn-process" onclick="procesarPedido(event)"
+            name="boton-procesar" id="boton-procesar"
+            style="background-color: #145c32 !important; color: white !important; border: none; border-radius: 10px; font-weight: bold; font-size: 1.4rem; padding: 12px 0; display: flex; align-items: center; justify-content: center;">
+
+            <div id="spinner-loader" class="spinner" style="display: none; margin-right: 15px;"></div>
+            <span id="btn-text">Confirmar y Realizar Pedido</span>
+          </button>
+
+
+        </td>
+      </tr>
+    </table>
+
+    </div>
+    <p class="text-center text-muted small">
+      <i class="bi bi-info-circle"></i> Todos los mascotas están sujetos a disponibilidad.
+    </p>
+    <i class="bi bi-info-circle"></i>
+    <i class="bi bi-info-circle"></i> 
+    <!-- Hidden Inputs -->
+    <input type="hidden" name="fecha" id="fecha">
+    <input type="hidden" name="horalocal" id="horalocal">
+    </div>
+    </form>
+  </main>
+
+
+
+
+
+
+
+  <!-- 1. Primero jQuery -->
+  <script src="https://code.jquery.com"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    let alertaMostrada = false;
+
+    function verificarAncho() {
+      if (window.innerWidth < 500 && !sessionStorage.getItem('alertaMovilMostrada')) {
+        Swal.fire({
+          title: 'Modo Celular',
+          text: 'Estás visualizando desde un celular si quieres visualizar mejor puedes girar la pantalla',
+          icon: 'info',
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#27ae60'
+        });
+        alertaMostrada = true; // Evita que se repita infinitamente al redimensionar
+      } else if (window.innerWidth >= 500) {
+        alertaMostrada = false; // Resetea si el usuario vuelve a agrandar la pantalla
+      }
+      // Guardamos la marca en el navegador para que no vuelva a salir
+      sessionStorage.setItem('alertaMovilMostrada', 'true');
+    }
+
+    // Ejecuta al cargar y al cambiar tamaño
+    window.addEventListener('load', verificarAncho);
+    window.addEventListener('resize', verificarAncho);
+  </script>
+
+  <script>
+    verificarAncho()
+    function actualizarTotal(valor) {
+      // 1. Convertimos la entrada a número y definimos un precio base
+      const cantidad = parseFloat(valor) || 0;
+      const precioUnitario = 1500; // Cambia esto por tu precio real
+      const subtotal = cantidad * precioUnitario;
+
+      // 2. Guardamos el número limpio en el campo oculto
+      document.getElementById('total').value = subtotal;
+
+      // 3. Formateamos con separadores de miles para el campo visible
+      // 'es-AR' usa puntos para miles y coma para decimales
+      const formatoMoneda = new Intl.NumberFormat('es-AR', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2
+      }).format(subtotal);
+
+      // 4. Mostramos el resultado
+      console.log("Subtotal sin formato:", subtotal);
+      console.log("total general str:", formatoMoneda);
+
+      function formatearTotal(valor) {
+        // Convertimos a número y formateamos a es-AR (Puntos en miles)
+        console.log("Valor original:", valor);
+        return Number(valor).toLocaleString('es-AR', {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0
+        });
+      }
+    }
+  </script>
+  <script>
+    // 1. Mover todo dentro del ready para asegurar que el DOM y librerías estén listos
+    $(document).ready(function () {
+
+      // Inicializar variables globales para este scope
+      let mascotasLS = (typeof obtenermascotasLocalStorage === 'function') ? obtenermascotasLocalStorage() : [];
+      let total = 0; // Deberías obtener el total real de tu carrito aquí
+
+
+      console.log(mascotasLS);
+
+      // 2. Validación de carrito vacío
+      if (mascotasLS.length === 0) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: 'No hay mascotas, selecciona alguno',
+          showConfirmButton: false,
+          timer: 3000
+        }).then(function () {
+          window.location = "./";
+        });
+        return; // Detener ejecución si no hay mascotas
+      }
+
+      // 3. Función genérica para limpiar y validar inputs (evita repetir código)
+      function validarInput(id) {
+        let el = document.getElementById(id);
+        if (!el) return;
+
+        let valor = el.value.trim();
+        el.value = valor;
+
+        if (valor.length === 0) {
+          console.warn(`El campo ${id} está vacío`);
+          // el.focus(); // Opcional
+          return false;
+        }
+        return true;
+      }
+
+      // Asignar eventos change
+      $('#cliente, #correo, #direccion, #cel').change(function () {
+        validarInput(this.id);
+      });
+
+      // 4. Manejo de Envíos
+      $(document).on("change", "input[type=radio]", function () {
+
+
+        // Asumiendo que 'total' viene de la lógica de tu carrito
+        if (total < 5000) {
+
+          Swal.fire({
+            icon: 'info',
+            title: 'Costo de envío',
+            text: 'Si la compra no supera los $5000 el envío tiene un costo base de $300',
+            timer: 4000
+          });
+        }
+
+
+
+
+        // Actualizar UI
+        // let enviostr = document.getElementById('enviostr');
+        /*
+         let totalgralstr = document.getElementById('totalgralstr');
+ 
+       
+         if (totalgralstr) {
+           let total_gral = total 
+           totalgralstr.value = total_gral.toFixed(0);
+         }
+         */
+      });
+
+    }); 
+  </script>
+  <script>
+    let total = 0;
+    let totalgral = 0;
+
+    let articulos = 0;
+    const listaCompra = document.querySelector("#lista_compra tbody");
+
+
+    //const mascotas = document.querySelector("#trmascotas");
+    let mascotasLS;
+    let total_item = 0;
+    mascotasLS = obtenermascotasLocalStorage();
+    mascotasLS.forEach(function (mascota) {
+
+      const row = document.createElement('tr');
+      console.log('tipo');
+      console.log(mascota.tipo);
+      let total_item = 0;
+      if (mascota.tipo == 'kilo.') {
+        total_item = (mascota.precio * mascota.unid * mascota.cant);
+      }
+      else {
+        total_item = (mascota.precio * mascota.cant);
+      }
+      console.log(total_item);
+      total = total + total_item;
+      total_gral = total
+
+      articulos++;
+      document.getElementById('items').textContent = articulos.toFixed(0);
+      row.innerHTML = `
+                <td>
+                    <!--<img height=50px width=50px src="../../img/${mascota.img}">-->
+                    <img height=50px width=50px src="${mascota.img}">
+                </td>               
+                <td style="text-align: center;width:5%"">
+                  <input type="text" value="${mascota.cant}" name="cant" hidden="true">${mascota.cant}</td> 
+                <td style="font-size:24px; width:60%">
+                  <input type="text" value="${mascota.desc}" name="desc" hidden=true></input>${mascota.desc}</td>
+                <td class="text-end" style="text-align: right; padding-right: 15px; width:20%">
+                  <input type="text" value="${mascota.precio}" name="prec" hidden="true">
+    $ ${Number(mascota.precio).toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
+              <td class="text-end" style="text-align: right; padding-right: 15px; width:20%">
+    <input type="text" value="${total_item}" name="sttl" hidden="true">
+    $ ${Number(total_item).toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
+    
+             <td class="text-end" style="text-align: right; vertical-align: middle;">
+    <button onclick="eliminarmascotaLocalStorage(${mascota.id})" 
+            style="border:none; background:none; cursor:pointer; color:red; font-size:20px;" 
+            data-id="${mascota.id}">
+        <i class="fas fa-trash-alt"></i>
+    </button>
+</td>
+                <td class="text-right" >
+                  <input type="text" value="${mascota.id}" name="prod_id" hidden> </input></td>
+                
+            `;
+
+      listaCompra.appendChild(row);
+
+
+
+    }
+
+    );
+
+
+
+
+    /*
+    for (let i = 0; i < mascotasLS.length; i++) {
+      let element = Number(mascotasLS[i].precio * mascotasLS[i].cant);
+      total = total + element;
+      items ++;
+      console.log(mascotasLS[i].precio);
+      console.log(mascotasLS[i].cantidad);
+      console.log(element);
+
+    }
+    */
+    console.log("articulos :");
+    console.log(articulos);
+    document.getElementById('total').value = " " + total.toFixed(2);
+
+    //document.getElementById('totalgralstr').value = " " + total_gral.toFixed(0);
+    function formatearTotal(valor) {
+      // Convertimos a número y formateamos con puntos de miles
+      const numeroFormateado = Number(valor).toLocaleString('es-AR', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      });
+
+      // Retornamos el símbolo $ concatenado al número
+      return `$ ${numeroFormateado}`;
+    }
+
+    // Ejemplo de uso: Supongamos que tu total es 1500000
+
+    const inputTotal = document.getElementById('totalgralstr');
+
+    // Asignamos el valor formateado al input
+    inputTotal.value = formatearTotal(total_gral);
+    document.getElementById('articulos').value = articulos;
+    // Ejecutar cuando el DOM esté listo
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log("articulos", articulos)
+      document.getElementById('items').textContent = articulos.toFixed(0);
+    });
+    if (total < 5000) {
+      // document.getElementById("boton-procesar").style.visibility = 'hidden';
+
+      Swal.fire({
+        icon: 'error',
+        title: 'Este pedido no supera el minimo de $ 5000 y tiene un costo minimo de $ 300',
+        text: ' el costo de envio es fijado por el servicio de envios, puede estar sujeto a cambios ',
+        showConfirmButton: false,
+        timer: 3000
+      }).then(function () {
+        // window.location = "./";
+      })
+
+    }
+
+
+
+
+    //Calcular montos
+
+
+    function vaciarCarrito() {
+      localStorage.clear();
+      console.log('vaciar carrito');
+      Swal.fire({
+        title: 'Vaciando Carrito ....',
+        text: '',
+        showConfirmButton: false,
+        timer: 3000
+      }).then(function () {
+        window.location = "./";
+      })
+
+    }
+
+
+
+    function leerCarrito() {
+      console.log('leerCarrito');
+      console.dir(localStorage);
+    }
+
+    function obtenermascotasLocalStorage() {
+      console.log('obtenermascotasLocalStorage')
+      let mascotaLS;
+
+      //Comprobar si hay algo en LS
+      if (localStorage.getItem('mascotas') === null) {
+        console.log('no tiene');
+        mascotaLS = [];
+      }
+      else {
+        console.log('tiene');
+        console.dir(localStorage.getItem('mascotas'));
+        mascotaLS = JSON.parse(localStorage.getItem('mascotas'));
+      }
+      return mascotaLS;
+    }
+
+
+    function eliminarmascotaLocalStorage(mascotaID) {
+      console.log('eliminar mascota');
+      console.log(mascotaID);
+      let mascotasLS;
+      //Obtenemos el arreglo de mascotas
+      mascotasLS = obtenermascotasLocalStorage();
+      //Comparar el id del mascota borrado con LS
+      mascotasLS.forEach(function (mascotaLS, index) {
+        console.log(mascotaLS.id);
+        if (mascotaLS.id == mascotaID) {
+          console.log('encontrado');
+          mascotasLS.splice(index, 1);
+          Swal.fire({
+            icon: 'error',
+            title: 'mascota Eliminado',
+            text: '',
+            showConfirmButton: false,
+            timer: 2000
+          })
+
+        }
+        location.reload();
+      });
+
+      //Añadimos el arreglo actual al LS
+      localStorage.setItem('mascotas', JSON.stringify(mascotasLS));
+    }
+
+
+
+
+    function validar() {
+      console.log("validar");
+      cambio_fecha();
+
+      cliente = document.getElementById('cliente').value.trim();
+      console.dir(cliente);
+      var correo = document.getElementById('correo').value.trim();
+      console.dir(correo);
+      var direccion = document.getElementById('direccion').value.trim();
+      console.dir(direccion);
+      var cel = document.getElementById('cel').value.trim();
+      console.dir(cel);
+      var total = Number(document.getElementById('total').value)
+      console.dir(total);
+
+
+
+
+
+      if (cliente == null || cliente.length == 0) {
+        document.getElementById("cliente").focus();
+        return false;
+      }
+      if (correo == null || correo.length == 0) {
+        document.getElementById("cliente").focus();
+        return false;
+      }
+      if (direccion == null || direccion.length == 0) {
+        document.getElementById("direccion").focus();
+        return false;
+      }
+      if (direccion == null || direccion.length == 0) {
+        document.getElementById("direccion").focus();
+        return false;
+      }
+      if (cel == null || cel.length == 0) {
+        document.getElementById("cel").focus();
+        return false;
+      }
+
+      console.log(total);
+      if (total == 0) {
+        console.log('entro naty');
+
+
+        Swal.fire({
+          icon: 'error',
+          title: 'Le recordamos que el pedido debe ser mayor cero',
+          text: ' ',
+          showConfirmButton: false,
+          timer: 5000
+        }).then(function () {
+          window.location = "./";
+        })
+
+      }
+
+      else {
+        document.getElementById('boton-procesar').value = 'Enviando, por favor espere...';
+        //document.getElementById('boton-procesar').disabled = true;
+        document.getElementById("vaciar-carrito").disabled = true;
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Genial...',
+          text: 'Procesando Pedido',
+          showConfirmButton: false,
+          timer: 5000
+        });
+
+
+        /*
+            const formulario = document.getElementById('procesar-datos');
+            console.log("ormulario", formulario);
+            // 2. Extraer datos usando los nombres reales de tu HTML
+            const formData = new FormData(formulario);
+            const datosFinales = Object.fromEntries(formData.entries());
+    
+            // 3. Obtener el carrito del LocalStorage
+            // (Asegúrate de que 'carrito' sea la clave que usas en tu app)
+            const mascotasEnCarrito = JSON.parse(localStorage.getItem('carrito')) || [];
+    
+            // 4. UNIFICAR TODO EN UN JSON
+            const payload = {
+              cliente: datosFinales.cliente,
+              cel: datosFinales.cel,
+              direccion: datosFinales.direccion,
+              localidad: datosFinales.localidad,
+              correo: datosFinales.correo,
+              nota: datosFinales.nota,
+              total: document.getElementById('totalgralstr').value, // Valor visible del total
+              fecha: new Date().toLocaleDateString(),
+              horalocal: new Date().toLocaleTimeString(),
+              mascotas: mascotasEnCarrito // El array con el detalle
+            };
+    
+            console.log("Payload a enviar:", payload);*/
+
+
+
+        document.getElementById("procesar-datos").submit();
+      }
+    }
+
+
+    function cambio_fecha() {
+      d = new Date();
+      var z = n => ('0' + n).slice(-2);
+      date = z(d.getUTCDate()) + '/' + z(d.getMonth() + 1) + '/' + z(d.getYear());
+      console.log("date :", date);
+      field = document.querySelector('#fecha');
+      field.value = date;
+      console.log(field.value);
+
+      hora = z(d.getHours()) + ':' +
+        z(d.getMinutes());
+      field = document.querySelector('#horalocal');
+      field.value = hora;
+      console.log("hora :", hora);
+    }
+    function procesarPedido(event) {
+      const btn = document.getElementById('boton-procesar');
+      const spinner = document.getElementById('spinner-loader');
+      const btnText = document.getElementById('btn-text');
+
+      // Muestra el spinner inmediatamente al hacer clic
+      spinner.style.setProperty('display', 'inline-block', 'important');
+      btnText.innerText = 'Procesando...';
+      btn.style.opacity = "0.7";
+      btn.style.pointerEvents = "none"; // Evita doble clic
+
+      // Si tu función validar() existe y falla, frenamos todo
+      if (typeof validar === "function" && !validar()) {
+        event.preventDefault();
+        // Resetear si hay error de validación
+        spinner.style.display = 'none';
+        btnText.innerText = 'Confirmar y Realizar Pedido';
+        btn.style.pointerEvents = "auto";
+        btn.style.opacity = "1";
+        return false;
+      }
+
+      // Si llegamos acá, el formulario sigue su curso al action="/send-email"
+      return true;
+    }
+
+
+  </script>
+
+
+
+  <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/emailjs-com@2.3.2/dist/email.min.js"></script>
+
+</body>
