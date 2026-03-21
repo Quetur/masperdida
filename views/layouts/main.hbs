@@ -226,14 +226,20 @@
             if (btnReact) {
                 const { hostname, protocol } = window.location;
 
-                // Si estás en tu PC (localhost), usás el puerto 5173 de Vite.
-                // Si estás en la nube (Oracle), Nginx maneja todo en el puerto estándar (sin puerto).
+                // Detectamos si estamos trabajando en tu PC
                 const isLocal = hostname === 'localhost' || hostname === '127.0.0.1';
-                const finalPort = isLocal ? ':5173' : '';
 
-                btnReact.href = `${protocol}//${hostname}${finalPort}`;
+                // LÓGICA DE PRODUCCIÓN VS DESARROLLO:
+                // Si es local: http://localhost:5173
+                // Si es nube: http://mascotaperdida.com.ar
+                const finalUrl = isLocal
+                    ? `${protocol}//${hostname}:5173`
+                    : `${protocol}//${hostname}/react/`;
 
-                console.log("Redirigiendo a React en:", btnReact.href);
+                btnReact.href = finalUrl;
+
+                console.log("Entorno:", isLocal ? "Desarrollo" : "Producción");
+                console.log("URL asignada al botón:", btnReact.href);
             }
 
             // Lógica del Sidebar
