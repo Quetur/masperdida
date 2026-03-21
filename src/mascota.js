@@ -143,7 +143,7 @@ router.post("/mascotamodi/:id", isAuthenticated, async (req, res) => {
   }
 });
 */
-router.get("/mascotanuevo", isAuthenticated, async (req, res) => {
+router.get("/mascotanuevo", async (req, res) => {
   try {
     // Extraemos id (celular) y nombre de la sesión
     const { id, nombre } = req.session.user;
@@ -443,5 +443,95 @@ router.get("/api/localidades/:id_provincia", async (req, res) => {
     res.status(500).json({ error: "Error interno del servidor" });
   }
 });
+
+// Ruta en Node.js (ej: routes/mascotas.js)
+router.get("/mascotanuevo_datos", async (req, res) => {
+  try {
+    const [cat] = await pool.query("SELECT * FROM categoria");
+    const [tipo] = await pool.query("SELECT * FROM tipo");
+    const [raza] = await pool.query("SELECT * FROM raza ORDER BY des ASC");
+    console.log("consolto", [cat])
+    res.json({ cat, tipo, raza });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "Error al cargar maestros" });
+  }
+});
+
+
+// Nueva ruta para el portal de React (Chat)
+router.post(
+  "/api/mascota_chat_graba",
+  upload.single("foto2"),
+  async (req, res) => {
+    console.log("🚀 Recibiendo reporte desde el Chat - Body:", req.body);
+    
+    try {
+      const {
+        id_categoria,
+        id_tipo,
+        id_raza,
+        titulo,
+        sexo,
+        latitud,
+        longitud,
+        calle,
+        celular, 
+        nombre_contacto
+      } = req.body;
+
+      // 1. El celular como id_usuario
+      const celularLimpio = celular ? celular.replace(/\D/g, "") : null;
+      const id_final = celularLimpio ? parseInt(celularLimpio) : 0;
+      const hoy = new Date().toISOString().split('T')[0];
+      const direccionFinal = (calle || "Ituzaingó, Buenos Aires").substring(0, 100);
+
+      // 2. Construir el objeto incluyendo los campos de "descuento" obligatorios
+      const newmascota = {
+        orden: "1",
+        fecha_suceso: hoy,
+        id_categoria: id_categoria,
+        id_tipo: id_tipo,
+        id_raza: (id_raza && id_raza !== "" && id_raza !== "null") ? id_raza : null,
+        sexo: sexo || "Macho",
+        foto2: req.file ? (req.file.location || req.file.filename) : "/img/iconoperrogato.png",
+        titulo: (titulo || "Sin Nombre").substring(0, 70),
+        des: `Contacto: ${nombre_contacto || 'Usuario'}`.substring(0, 70),
+        nota: `Tel: ${celular || ''}`, 
+        id_usuario: id_final,
+        id_localidad: 1, 
+        id_provincia: 1, 
+        id_pais: "1",
+        fecha_nacimiento: "1900-01-01",
+        latitud: latitud ? parseFloat(latitud) : 0,
+        longitud: longitud ? parseFloat(longitud) : 0,
+        visible: 1,
+        direccion: direccionFinal,
+        // --- CAMPOS OBLIGATORIOS QUE FALTABAN ---
+        descuentoxunidad: 0,
+        descuentoapartir: 0
+      };
+
+      console.log("📝 Grabando en DB con campos de descuento en 0...");
+
+      // 3. Ejecutar INSERT
+      const [result] = await pool.query("INSERT INTO mascota SET ?", [newmascota]);
+
+      res.status(200).json({
+        success: true,
+        message: "Mascota publicada con éxito",
+        insertId: result.insertId
+      });
+
+    } catch (error) {
+      console.error("❌ Error grabando desde el chat:", error);
+      res.status(500).json({
+        success: false,
+        message: "Error interno al procesar el reporte",
+        error: error.message
+      });
+    }
+  }
+);
 
 export default router;

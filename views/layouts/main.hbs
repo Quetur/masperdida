@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-sidebar="collapsed">
 
 <head>
     <meta charset="UTF-8">
@@ -14,54 +14,134 @@
     <link rel="stylesheet" href="/css/main.css">
 
     <style>
-        /* Estilo para el botón Acerca de nosotros discreto */
+        /* --- ESTILOS NAVEGACIÓN PRINCIPAL --- */
+        .top-navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 12px; /* Espaciado uniforme */
+        }
+
+        /* --- BOTÓN NUEVA MASCOTA (2 RENGLONES) --- */
+        .btn-nueva-publicacion {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: #10b981;
+            border: none;
+            padding: 8px 16px;
+            color: white !important;
+            border-radius: 12px;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none !important;
+            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2);
+        }
+
+        .btn-nueva-publicacion .text-container {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.1;
+            text-align: left;
+        }
+
+        .btn-nueva-publicacion .main-text {
+            font-size: 0.85rem;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .btn-nueva-publicacion .sub-text {
+            font-size: 0.7rem;
+            font-weight: 500;
+            opacity: 0.9;
+        }
+
+        .btn-nueva-publicacion:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3);
+        }
+
+        /* --- BOTÓN ACERCA DE (DISCRETO) --- */
         .btn-about-minimal {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             background: transparent;
             border: none;
-            padding: 5px 10px;
-            color: #64748b; /* Gris discreto */
+            padding: 5px;
+            color: #64748b;
             font-family: 'Inter', sans-serif;
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s ease;
             text-transform: uppercase;
-            letter-spacing: 0.02em;
         }
 
-        .btn-about-minimal span {
-            text-decoration: underline;
-            text-underline-offset: 3px;
+        .btn-about-minimal:hover { color: #1e293b; }
+
+        /* --- RESPONSIVE / AJUSTE MÓVIL --- */
+        @media (max-width: 768px) {
+            .brand-name {
+                display: none; /* Oculta el texto largo del logo en móviles */
+            }
+
+            .top-navbar {
+                padding: 8px 10px;
+            }
+
+            .nav-right {
+                gap: 6px;
+            }
+
+            .btn-nueva-publicacion {
+                padding: 6px 10px;
+            }
+
+            .btn-nueva-publicacion .main-text { font-size: 0.75rem; }
+            .btn-nueva-publicacion .sub-text { font-size: 0.6rem; }
+
+            .btn-about-minimal span {
+                display: none; /* En móviles muy chicos dejamos solo el icono de info */
+            }
+
+            .nav-btn-professional {
+                padding: 8px 10px;
+                font-size: 0.7rem;
+            }
         }
 
-        .btn-about-minimal i {
-            font-size: 1.1rem;
-            color: #94a3b8;
+        /* Lógica de menú de usuario */
+        #menu-toggle:checked ~ .admin-dropdown {
+            display: block !important;
+            opacity: 1;
+            transform: translateY(0);
         }
-
-        .btn-about-minimal:hover {
-            color: #1e293b;
-        }
-
-        .btn-about-minimal:hover i {
-            color: #2563eb; /* El logo se pone azul al pasar el mouse */
+        
+        #menu-toggle:not(:checked) ~ .admin-dropdown {
+            display: none;
         }
     </style>
 
     <script>
+        // Pre-carga del estado del sidebar para evitar saltos visuales
         (function () {
             const storageValue = localStorage.getItem('sidebar_collapsed');
             const isCollapsed = storageValue === null ? true : storageValue === 'true';
-            
-            if (isCollapsed) {
-                document.documentElement.setAttribute('data-sidebar', 'collapsed');
-                localStorage.setItem('sidebar_collapsed', 'true');
-            } else {
-                document.documentElement.setAttribute('data-sidebar', 'expanded');
-            }
+            document.documentElement.setAttribute('data-sidebar', isCollapsed ? 'collapsed' : 'expanded');
         })();
     </script>
 </head>
@@ -77,69 +157,37 @@
         </div>
 
         <div class="nav-right">
+            <a href="#" id="btnNuevaPublicacion" class="btn-nueva-publicacion">
+                <i class="fas fa-plus-circle"></i> 
+                <div class="text-container">
+                    <span class="main-text">NUEVA</span>
+                    <span class="sub-text">Mascota</span>
+                </div>
+            </a>
+
             <button id="btnAbout" class="btn-about-minimal">
                 <i class="fas fa-info-circle"></i> 
                 <span>Acerca de nosotros</span>
             </button>
-     <style>
-                    /* Lógica de visibilidad con tu checkbox actual */
-                    #menu-toggle:checked ~ .admin-dropdown {
-                        display: block !important;
-                        opacity: 1;
-                        transform: translateY(0);
-                        pointer-events: auto;
-                    }
 
-                    #menu-toggle:not(:checked) ~ .admin-dropdown {
-                        display: none;
-                        opacity: 0;
-                        transform: translateY(-10px);
-                        pointer-events: none;
-                    }
-
-                    /* Animación para la flechita */
-                    #menu-toggle:checked ~ label .fa-chevron-down {
-                        transform: rotate(180deg);
-                    }
-                </style>
             {{#if user}}
+            <div class="admin-menu-container">
+                <input type="checkbox" id="menu-toggle" hidden>
+                
+                <label for="menu-toggle" class="nav-btn-professional">
+                    <i class="fas fa-user-circle"></i>
+                    <span class="user-name-text">{{user.nombre}}</span>
+                    <i class="fas fa-chevron-down" style="font-size: 0.8rem;"></i>
+                </label>
 
-<div class="admin-menu-container">
-    <input type="checkbox" id="menu-toggle" hidden>
-    
-    <label for="menu-toggle" class="nav-btn-professional">
-        <i class="fas fa-user-circle"></i>
-        <span class="user-name-text">{{user.nombre}}</span>
-        <i class="fas fa-chevron-down" style="font-size: 0.8rem;"></i>
-    </label>
-
-    <ul class="admin-dropdown">
-        <li style="padding: 5px 15px; font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Mi Cuenta</li>
-        
-        <li>
-            <a href="/mascotacambia">
-                <i class="fas fa-paw"></i> Tus Mascotas
-            </a>
-        </li>
-        
-        <li>
-            <a href="/perfil/editar">
-                <i class="fas fa-user-edit"></i> Editar Perfil
-            </a>
-        </li>
-
-        <li class="menu-divider"></li>
-
-        <li>
-            <a href="/logout" class="logout-link">
-                <i class="fas fa-sign-out-alt"></i> Salir
-            </a>
-        </li>
-    </ul>
-</div>
-
-
-           
+                <ul class="admin-dropdown">
+                    <li style="padding: 5px 15px; font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Mi Cuenta</li>
+                    <li><a href="/mascotacambia"><i class="fas fa-paw"></i> Tus Mascotas</a></li>
+                    <li><a href="/perfil/editar"><i class="fas fa-user-edit"></i> Editar Perfil</a></li>
+                    <li class="menu-divider"></li>
+                    <li><a href="/logout" class="logout-link"><i class="fas fa-sign-out-alt"></i> Salir</a></li>
+                </ul>
+            </div>
             {{else}}
             <a href="/signin" id="btnAcceso" class="nav-btn-professional">INGRESAR</a>
             {{/if}}
@@ -162,13 +210,19 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
+            // Configuración dinámica de URL para React
+            const btnReact = document.getElementById('btnNuevaPublicacion');
+            if (btnReact) {
+                const currentHost = window.location.hostname;
+                btnReact.href = `http://${currentHost}:5173`;
+            }
+
+            // Lógica del Sidebar
             const sidebar = document.getElementById('sidebar');
             const content = document.getElementById('main-content');
             const toggleBtn = document.getElementById('toggle-btn');
 
             if (sidebar && toggleBtn) {
-                const isCollapsed = document.documentElement.getAttribute('data-sidebar') === 'collapsed';
-
                 const setSidebarState = (collapsed) => {
                     if (collapsed) {
                         sidebar.classList.add('collapsed');
@@ -181,7 +235,8 @@
                     }
                 };
 
-                setSidebarState(isCollapsed);
+                const isCollapsedInitial = document.documentElement.getAttribute('data-sidebar') === 'collapsed';
+                setSidebarState(isCollapsedInitial);
 
                 toggleBtn.addEventListener('click', (e) => {
                     e.preventDefault();
@@ -192,19 +247,10 @@
                 });
             }
 
+            // Botón About
             const btnAbout = document.getElementById('btnAbout');
             if (btnAbout) {
-                btnAbout.addEventListener('click', () => {
-                     window.location.href = '/about';
-                });
-            }
-
-            const btnSalir = document.getElementById('btnSalirMenu');
-            if (btnSalir) {
-                btnSalir.addEventListener('click', () => {
-                    sessionStorage.clear();
-                    localStorage.removeItem('token_acceso');
-                });
+                btnAbout.addEventListener('click', () => { window.location.href = '/about'; });
             }
         });
     </script>

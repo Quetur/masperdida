@@ -1,4 +1,5 @@
 import express from "express";
+import cors from 'cors';
 import { engine } from "express-handlebars";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -10,12 +11,13 @@ import router from "./src/routes/router.js";
 
 dotenv.config();
 
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 4020;
-
+app.use(cors());
 // 3. MIDDLEWARES
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
@@ -61,29 +63,33 @@ app.use((req, res, next) => {
   next();
 });
 
-// 6. RUTAS (Optimizada para evitar inyecciones y mejorar rendimiento)
+
+// 6. RUTAS
 app.get("/", async (req, res) => {
   try {
     const [promesaCategorias, promesaMascotas, promesaTipos] = await Promise.all([
       pool.execute("SELECT id_categoria, des FROM categoria"),
       (async () => {
-        // 1. Definimos la base SIN el order by
-        let sql = `SELECT 
-                        m.*, 
-                        c.des AS cat_des, 
-                        d.des AS tipo_des, 
-                        e.des AS raza_des,
-                        u.username AS dueño_nombre,
-                        u.id AS contacto_id,
-                        u.barrio AS dueño_barrio
-                    FROM mascota m 
-                    INNER JOIN categoria c ON c.id_categoria = m.id_categoria 
-                    INNER JOIN tipo d ON d.id_tipo = m.id_tipo  
-                    INNER JOIN raza e ON e.id_raza = m.id_raza 
-                    INNER JOIN users u ON u.id = m.id_usuario
-                    WHERE m.visible = 1`;
+        // 1. Base de la consulta SIN punto y coma al final
+        let sql = `
+          SELECT 
+            m.*, 
+            c.des AS cat_des, 
+            d.des AS tipo_des, 
+            e.des AS raza_des,
+            u.username AS dueño_nombre,
+            u.id AS contacto_id,
+            u.barrio AS dueño_barrio
+          FROM mascota m 
+          LEFT JOIN categoria c ON c.id_categoria = m.id_categoria 
+          LEFT JOIN tipo d ON d.id_tipo = m.id_tipo  
+          LEFT JOIN raza e ON e.id_raza = m.id_raza 
+          LEFT JOIN users u ON u.id = m.id_usuario
+          WHERE m.visible = 1`; // Terminamos en el WHERE para concatenar
 
         const params = [];
+
+        // 2. Filtros dinámicos
         Object.keys(req.query).forEach((key) => {
           if (key.startsWith("f")) {
             const idCategoria = key.substring(1);
@@ -97,7 +103,7 @@ app.get("/", async (req, res) => {
           }
         });
 
-        // 2. Agregamos el ORDER BY al final de todo
+        // 3. Orden y cierre de la consulta
         sql += ` ORDER BY m.fecha_suceso DESC`;
 
         return pool.execute(sql, params);
@@ -105,33 +111,26 @@ app.get("/", async (req, res) => {
       pool.execute("SELECT id_tipo, des FROM tipo"),
     ]);
 
+    // ... resto de tu lógica de formateo de fechas y render ...
     const [categorias] = promesaCategorias;
     const [rows] = promesaMascotas;
     const [tipos] = promesaTipos;
 
     const mascotasFormateadas = rows.map((m) => {
-      const fechaBase = m.fecha_suceso || new Date();
-      const fecha = new Date(fechaBase);
-
+      const fecha = m.fecha_suceso ? new Date(m.fecha_suceso) : new Date();
       let fechaLarga = fecha.toLocaleDateString("es-AR", {
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-        year: "numeric",
+        weekday: "long", day: "numeric", month: "long", year: "numeric",
       });
-
-      fechaLarga = fechaLarga.replace(/ de /g, " ").replace(/,/g, "");
-
       return {
         ...m,
-        fecha_formateada: fechaLarga,
+        fecha_formateada: fechaLarga.replace(/ de /g, " ").replace(/,/g, ""),
       };
     });
 
     res.render("home", {
       mascotas: mascotasFormateadas,
-      categorias: categorias,
-      tipos: tipos,
+      categorias,
+      tipos,
       filtros: req.query,
     });
   } catch (err) {
