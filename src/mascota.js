@@ -445,16 +445,32 @@ router.get("/api/localidades/:id_provincia", async (req, res) => {
 });
 
 // Ruta en Node.js (ej: routes/mascotas.js)
-router.get("/mascotanuevo_datos", async (req, res) => {
+router.get("/api/mascotanuevo_datos", async (req, res) => {
+  console.log("==> [BACKEND] Recibí petición en /api/mascotanuevo_datos");
+  
   try {
+    console.log("==> [DB] Intentando consultar categorías...");
     const [cat] = await pool.query("SELECT * FROM categoria");
+    console.log("==> [DB] Categorías obtenidas:", cat.length);
+
+    console.log("==> [DB] Intentando consultar tipos...");
     const [tipo] = await pool.query("SELECT * FROM tipo");
+    console.log("==> [DB] Tipos obtenidos:", tipo.length);
+
+    console.log("==> [DB] Intentando consultar razas...");
     const [raza] = await pool.query("SELECT * FROM raza ORDER BY des ASC");
-    console.log("consolto", [cat])
+    console.log("==> [DB] Razas obtenidas:", raza.length);
+
+    console.log("==> [BACKEND] Enviando JSON al frontend...");
     res.json({ cat, tipo, raza });
+    
   } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({ error: "Error al cargar maestros" });
+    console.error("!!! [ERROR CRÍTICO EN BACKEND]:", error.message);
+    console.error("Stack trace:", error.stack);
+    res.status(500).json({ 
+        error: "Error al cargar maestros", 
+        details: error.message 
+    });
   }
 });
 
