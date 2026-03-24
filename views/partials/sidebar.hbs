@@ -39,15 +39,15 @@
     }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    /* Botón Toggle */
+    /* Botón Toggle (Ahora dentro del sidebar) */
     #toggle-btn {
         position: absolute;
         z-index: 1100;
         top: 20px;
-        left: 100%;
+        left: 100%; /* Pegado al borde derecho del sidebar */
         width: 36px;
         height: 36px;
-        margin-left: -18px;
+        margin-left: -18px; /* Centrado sobre el borde */
         background: var(--arrow-gradient, linear-gradient(135deg, #007bff 0%, #00d4ff 100%));
         border: 2px solid #000;
         border-radius: 8px;
@@ -115,25 +115,11 @@
 
         groups.forEach(group => {
             const checkboxes = group.querySelectorAll('input[type="checkbox"]');
-            
-            // Buscamos si este grupo es el de "Tipo de Mascota" viendo el título
-            const isPetTypeGroup = group.querySelector('.filter-section-title')?.textContent.includes('Tipo de Mascota');
-
             checkboxes.forEach(checkbox => {
                 checkbox.addEventListener('change', function () {
                     if (this.checked) {
                         checkboxes.forEach(cb => { if (cb !== this) cb.checked = false; });
                     }
-                    
-                    // --- CAMBIO SOLICITADO ---
-                    // Solo guardamos el estado "colapsado" si pertenece a Tipo de Mascota
-                    if (isPetTypeGroup) {
-                        localStorage.setItem('sidebar_collapsed', 'true');
-                    } else {
-                        // Opcional: Si querés que al tocar "Estado" se mantenga abierto (si estaba abierto)
-                        // localStorage.setItem('sidebar_collapsed', 'false'); 
-                    }
-                    
                     if (loader) loader.style.display = 'flex';
                     form.submit();
                 });
