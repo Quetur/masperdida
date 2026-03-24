@@ -30,7 +30,7 @@ app.engine(
   engine({
     extname: ".hbs",
     defaultLayout: "main",
-    partialsDir: path.join(__dirname, "views/partials"),
+    partialsDir: path.join(__dirname, "views", "partials"),
     helpers: {
       eq: (a, b) => a === b,
       list: (...args) => args.slice(0, -1),

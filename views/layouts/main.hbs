@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -7,7 +8,7 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <link rel="icon" href="/img/logo.png" type="image/png">
     <link rel="stylesheet" href="/css/main.css">
 
@@ -55,8 +56,16 @@
             line-height: 1.1;
         }
 
-        .btn-nueva-publicacion .main-text { font-size: 0.85rem; text-transform: uppercase; }
-        .btn-nueva-publicacion .sub-text { font-size: 0.7rem; opacity: 0.9; font-weight: 500; }
+        .btn-nueva-publicacion .main-text {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+
+        .btn-nueva-publicacion .sub-text {
+            font-size: 0.7rem;
+            opacity: 0.9;
+            font-weight: 500;
+        }
 
         .btn-about-minimal {
             display: flex;
@@ -74,8 +83,16 @@
             transition: all 0.2s;
             text-decoration: none;
         }
-        .btn-about-minimal:hover { background: #e2e8f0; color: #1e293b; }
-        .btn-about-minimal i { color: #2563eb; font-size: 1rem; }
+
+        .btn-about-minimal:hover {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+
+        .btn-about-minimal i {
+            color: #2563eb;
+            font-size: 1rem;
+        }
 
         .nav-btn-ingresar {
             background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
@@ -91,7 +108,10 @@
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
         }
 
-        .admin-menu-container { position: relative; }
+        .admin-menu-container {
+            position: relative;
+        }
+
         .admin-dropdown {
             position: absolute;
             right: 0;
@@ -103,9 +123,10 @@
             display: none;
             list-style: none;
             padding: 10px 0;
-            box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
             z-index: 3000;
         }
+
         .admin-dropdown li a {
             display: block;
             padding: 10px 15px;
@@ -113,14 +134,34 @@
             text-decoration: none;
             font-size: 0.9rem;
         }
-        .admin-dropdown li a:hover { background: #f8fafc; color: #2563eb; }
-        #menu-toggle:checked ~ .admin-dropdown { display: block; }
+
+        .admin-dropdown li a:hover {
+            background: #f8fafc;
+            color: #2563eb;
+        }
+
+        #menu-toggle:checked~.admin-dropdown {
+            display: block;
+        }
 
         @media (max-width: 768px) {
-            .top-navbar { padding: 0 15px; height: 80px; }
-            .btn-about-minimal span { display: none; }
-            .brand-name { display: none; }
-            .nav-btn-ingresar { padding: 10px 15px; font-size: 0.75rem; }
+            .top-navbar {
+                padding: 0 15px;
+                height: 80px;
+            }
+
+            .btn-about-minimal span {
+                display: none;
+            }
+
+            .brand-name {
+                display: none;
+            }
+
+            .nav-btn-ingresar {
+                padding: 10px 15px;
+                font-size: 0.75rem;
+            }
         }
     </style>
 
@@ -139,7 +180,8 @@
         <div class="nav-left">
             <a href="/" class="brand-link">
                 <img src="/img/logo.png" alt="Logo" class="nav-logo" style="height: 70px;">
-                <span class="brand-name" style="color: #2563eb; font-weight: 800; margin-left: 10px;">Mascota Perdida</span>
+                <span class="brand-name" style="color: #2563eb; font-weight: 800; margin-left: 10px;">Mascota
+                    Perdida</span>
             </a>
         </div>
 
@@ -166,7 +208,9 @@
                     <i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i>
                 </label>
                 <ul class="admin-dropdown">
-                    <li style="padding: 5px 15px; font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Cuenta</li>
+                    <li
+                        style="padding: 5px 15px; font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">
+                        Cuenta</li>
                     <li><a href="/mascotacambia"><i class="fas fa-paw"></i> Mis Mascotas</a></li>
                     <li><a href="/perfil/editar"><i class="fas fa-user-edit"></i> Editar Perfil</a></li>
                     <li style="height: 1px; background: #eee; margin: 5px 0;"></li>
@@ -181,7 +225,7 @@
 
     <div class="layout-container" style="display: flex; margin-top: 100px;">
         {{#unless hideSidebar}}
-            {{> sidebar }}
+        {{> sidebar }}
         {{/unless}}
 
         <main id="main-content" style="flex: 1; padding: 30px; transition: all 0.3s;">
@@ -210,21 +254,27 @@
                 const applyState = (collapsed) => {
                     sidebar.classList.toggle('collapsed', collapsed);
                     content?.classList.toggle('expanded', collapsed);
-                    toggleBtn.innerHTML = collapsed ? '<i class="fas fa-chevron-right"></i>' : '<i class="fas fa-chevron-left"></i>';
+                    toggleBtn.innerHTML = collapsed
+                        ? '<i class="fas fa-chevron-right"></i>'
+                        : '<i class="fas fa-chevron-left"></i>';
                 };
 
-                // Cargar el estado guardado al iniciar/recargar
+                // 1. Leemos el estado (esto ya lo tenías)
                 const isCollapsed = localStorage.getItem('sidebar_collapsed') === 'true';
+
+                // 2. ¡ESTA ES LA QUE FALTA! Ejecutamos la función apenas carga
                 applyState(isCollapsed);
 
-                // Botón Manual
+                // 3. Botón Manual (esto también lo tenías)
                 toggleBtn.addEventListener('click', () => {
                     const newState = !sidebar.classList.contains('collapsed');
                     localStorage.setItem('sidebar_collapsed', newState);
                     applyState(newState);
                 });
             }
+
         });
     </script>
 </body>
+
 </html>
