@@ -14,29 +14,27 @@ export const isAuthenticated = (req, res, next) => {
             // Verificamos el token
             const decoded = jwt.verify(token, process.env.JWT_SECRETO);
             
+            // Reconstruimos el objeto con la CATEGORÍA
             req.session.user = { 
                 id: decoded.id, 
-                nombre: decoded.nombre || "Usuario" 
+                nombre: decoded.nombre || "Usuario",
+                categoria: decoded.categoria // <--- AHORA SE RESTAURA EL ROL
             };
             
-            console.log("✅ Sesión restaurada mediante Token (ID/Celular):", decoded.id);
+            console.log(`✅ Sesión restaurada: ${decoded.nombre} (${decoded.categoria})`);
             return next();
         } catch (error) {
             console.error("❌ Token inválido o expirado:", error.message);
             
-            // --- LIMPIEZA DE SEGURIDAD ---
-            res.clearCookie('token_acceso'); // Borra la cookie del navegador
-            res.locals.user = null;          // Quita el nombre de las vistas Handlebars
+            res.clearCookie('token_acceso');
+            res.locals.user = null;
             if (req.session) {
-                req.session.user = null;     // Limpia el usuario de la sesión
+                req.session.user = null;
             }
-            // -----------------------------
         }
     }
 
     // 3. BLOQUEO: Si no hay nada, al Login
-    console.log("🚫 Acceso denegado. Redirigiendo a /signin");
-    
     if (req.xhr || req.headers.accept.indexOf('json') > -1) {
         return res.status(401).json({ error: 'Sesión expirada' });
     }

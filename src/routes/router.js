@@ -206,16 +206,42 @@ router.get("/mailok", async (req, res) => {
 
 
 router.get("/mascotacambia", isAuthenticated, async (req, res) => {
-  console.log("router /mascotacambia", req.session.user.nombre );
-  const [data] = await pool.query(
-    "SELECT *, c.des as cat_des, mascota.des as prod_des  FROM mascota INNER JOIN categoria c ON c.id_categoria = mascota.id_categoria ORDER BY mascota.id_categoria,mascota.id_raza,mascota.orden"
-  );
-  console.log("mascotas router", [data]);
-  res.render("mascotacambia", { data,
-    title: "Administrar mascotas",
-    hideSidebar: true, // <--- Esta variable controla la visibilidad
-    usuario: req.session.user.nombre 
-  });
+  // 1. Obtenemos el usuario de la sesión
+  const user = req.session.user;
+
+  // 2. Log por consola para verificar el rol
+  console.log("------------------------------------------");
+  console.log(`USUARIO: ${user.nombre}`);
+  console.log(`CATEGORIA: ${user.categoria}`);
+  console.log(`¿ES ADMIN?: ${user.categoria === 'admin' ? 'SÍ, TIENE PERMISOS' : 'NO, ES USUARIO COMÚN'}`);
+  console.log("------------------------------------------");
+
+  // 3. Definimos la consulta SQL según el rol
+  let query = "SELECT mascota.*, c.des as cat_des, mascota.des as prod_des FROM mascota INNER JOIN categoria c ON c.id_categoria = mascota.id_categoria";
+  let params = [];
+
+  // Si NO es admin, filtramos por su ID (o el campo que uses para vincular mascota-dueño)
+  if (user.categoria !== 'admin') {
+    query += " WHERE mascota.id_usuario = ?"; // Ajusta 'id_usuario' al nombre real de tu columna
+    params.push(user.id);
+  }
+
+  query += " ORDER BY mascota.id_categoria, mascota.id_raza, mascota.orden";
+
+  try {
+    const [data] = await pool.query(query, params);
+    
+    res.render("mascotacambia", { 
+      data,
+      title: "Administrar mascotas",
+      hideSidebar: true,
+      usuario: user.nombre,
+      role: user.categoria // Pasamos el rol al HBS por si lo necesitas
+    });
+  } catch (error) {
+    console.error("Error en /mascotacambia:", error);
+    res.status(500).send("Error interno");
+  }
 });
 
 

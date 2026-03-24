@@ -274,86 +274,68 @@ router.post("/limpiar-registro-fallido", async (req, res) => {
 
 
 router.post("/login", async (req, res, next) => {
+    console.log("ingreso en login", req.body)
     try {
-        // CORRECCIÓN CRÍTICA: Extraemos 'pass' porque así llega desde tu frontend
         const { celular, pass } = req.body; 
         
-        // Debug para confirmar en terminal
         console.log("--- Intento de Login ---");
-        console.log("Body recibido:", req.body);
-
-        // 1. LÓGICA DE IDENTIFICACIÓN UNIVERSAL
-        // Si tiene @ es email, si no, limpiamos para que sea solo números (ID de tabla)
+        
         const esEmail = celular && celular.includes("@");
         const loginID = esEmail 
             ? celular.toLowerCase().trim() 
             : (celular ? celular.replace(/\D/g, '') : null);
         
-        console.log("ID procesado para búsqueda:", loginID);
-
-        // Validamos que existan ambos datos
         if (!loginID || !pass) {
-            return res.json({ 
-                success: false, 
-                error: "Ingrese sus credenciales" 
-            });
+            return res.json({ success: false, error: "Ingrese sus credenciales" });
         }
 
         // 2. BÚSQUEDA EN BASE DE DATOS
-        // Buscamos siempre por el campo 'id' (PK de tu tabla)
         const [results] = await pool.query("SELECT * FROM users WHERE id = ?", [loginID]);
         const user = results[0];
 
         if (!user) {
-            return res.json({ 
-                success: false, 
-                error: "Usuario no encontrado" 
-            });
+            return res.json({ success: false, error: "Usuario no encontrado" });
         }
 
         // 3. VALIDACIÓN DE CREDENCIALES
-        // Comparación de Contraseña (bcrypt)
         const esPassValida = await bcryptjs.compare(pass, user.password);
-        
-        // Comparación de PIN (el PIN está guardado en la columna 'estado')
         const esPinValido = (pass === user.estado);
 
-        console.log("¿Password válida?:", esPassValida);
-        console.log("¿PIN válido?:", esPinValido);
-
         if (!esPassValida && !esPinValido) {
-            return res.json({ 
-                success: false, 
-                error: "Contraseña o PIN incorrectos" 
-            });
+            return res.json({ success: false, error: "Contraseña o PIN incorrectos" });
         }
 
         // 4. MANEJO DE VERIFICACIÓN AUTOMÁTICA
-        // Si el usuario ingresó con el PIN, lo verificamos de inmediato en la DB
         if (esPinValido) {
             await pool.query("UPDATE users SET estado = 'verificado' WHERE id = ?", [user.id]);
-            user.estado = 'verificado'; // Actualizamos localmente para el siguiente check
-            console.log("Cuenta verificada automáticamente mediante PIN.");
+            user.estado = 'verificado';
         }
 
-        // Bloqueo si intenta entrar con pass normal pero nunca verificó la cuenta
         if (user.estado !== 'verificado') {
-            return res.json({ 
-                success: false, 
-                error: "Debes verificar tu cuenta con el código enviado antes de entrar." 
-            });
+            return res.json({ success: false, error: "Debes verificar tu cuenta..." });
         }
 
-        // 5. GENERACIÓN DE SESIÓN
+        // --- CAMBIO AQUÍ: LOG DE CATEGORÍA ---
+        console.log(`USUARIO IDENTIFICADO: ${user.username} | CATEGORIA: ${user.categoria}`);
+
+        // 5. GENERACIÓN DE SESIÓN (Agregamos categoria)
         req.session.user = {
             id: user.id,
-            nombre: user.username 
+            nombre: user.username,
+            categoria: user.categoria // <--- CLAVE 1
         };
 
-        // 6. GENERACIÓN DE TOKEN JWT
-        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRETO, {
-            expiresIn: '1h' 
-        });
+        // 6. GENERACIÓN DE TOKEN JWT (Agregamos categoria al Payload)
+        // Esto permite que el middleware 'isAuthenticated' recupere el rol si se reinicia el server
+        const token = jwt.sign(
+            { 
+                id: user.id, 
+                nombre: user.username,
+                categoria: user.categoria // <--- CLAVE 2
+            }, 
+            process.env.JWT_SECRETO, 
+            { expiresIn: '1h' }
+        );
 
         // 7. GUARDADO DE SESIÓN Y COOKIE
         req.session.save((err) => {
@@ -364,15 +346,16 @@ router.post("/login", async (req, res, next) => {
 
             res.cookie('token_acceso', token, { 
                 httpOnly: false, 
-                secure: false,   // Cambiar a true si usas HTTPS
+                secure: false, 
                 maxAge: 3600000, 
                 path: '/'        
             });
 
             return res.json({
                 success: true,
-                message: esPinValido ? "¡Cuenta verificada e ingreso exitoso!" : "¡Ingreso exitoso!",
+                message: "¡Ingreso exitoso!",
                 user: user.username,
+                categoria: user.categoria, // También lo enviamos al frontend por si lo necesitas
                 token: token
             });
         });
