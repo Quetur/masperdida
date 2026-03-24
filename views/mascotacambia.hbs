@@ -4,6 +4,27 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gestión de Mascotas | Admin</title>
+  
+  <style>
+    /* --- CORRECCIÓN DE DESPLAZAMIENTO --- */
+    #sidebar {
+      display: none !important;
+    }
+
+    #main-content {
+      margin-left: 0 !important;
+      padding: 0 !important;
+      width: 100% !important;
+      transition: none !important;
+    }
+
+    /* Asegura que el contenedor de Tailwind use el ancho máximo sin interferencias */
+    .container {
+      margin-left: auto !important;
+      margin-right: auto !important;
+    }
+  </style>
+
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 </head>
@@ -114,12 +135,10 @@
     }
 
     $(document).ready(function () {
-      // Buscador optimizado que busca en toda la fila
       $("#search").on("keyup", function () {
         const value = $(this).val().toLowerCase();
         
         $("#tabla tbody tr").filter(function () {
-          // Buscamos el texto en toda la fila para flexibilidad total
           const rowText = $(this).text().toLowerCase();
           $(this).toggle(rowText.indexOf(value) > -1);
         });

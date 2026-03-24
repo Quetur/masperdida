@@ -1,297 +1,128 @@
-/* --- VARIABLES GLOBALES --- */
 :root {
-    --nav-h: 120px; 
+    --nav-h: 100px; 
     --sb-w: 260px;
     --p-color: #2563eb;
-    --p-dark: #1e3a8a;
     --p-gradient: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
     --bg-main: #f8fafc;
     --white: #ffffff;
-    --text-dark: #0f172a;
     --border-color: #e2e8f0;
-    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
-    --shadow-xl: 0 25px 30px -5px rgba(0, 0, 0, 0.15);
-    --radius-md: 12px;
-    --radius-lg: 20px;
-    
-    /* Nueva variable para el azul esfumado de la flecha */
-    --arrow-gradient: linear-gradient(135deg, #007bff 0%, #00d4ff 100%);
+    --btn-green: #00b894;
+    --text-gray: #636e72;
 }
 
-/* --- RESET Y BASE --- */
-* { 
-    margin: 0; 
-    padding: 0; 
-    box-sizing: border-box; 
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
     font-family: 'Inter', sans-serif;
     background-color: var(--bg-main);
-    color: var(--text-dark);
     padding-top: var(--nav-h);
-    overflow-x: hidden; /* Evita scroll horizontal por el sidebar oculto */
+    overflow-x: hidden;
 }
 
-/* --- TOP NAVBAR --- */
+/* NAVBAR - DISTRIBUCIÓN HORIZONTAL */
 .top-navbar {
-    display: flex;
-    justify-content: space-between;
+    display: flex; 
+    justify-content: space-between; /* Empuja nav-left a izq y nav-right a der */
     align-items: center;
-    background-color: var(--white);
+    background: var(--white); 
     padding: 0 40px; 
     height: var(--nav-h);
-    width: 100%;
+    width: 100%; 
     position: fixed; 
     top: 0; 
     left: 0;
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
     border-bottom: 2px solid var(--border-color);
     z-index: 2000;
 }
 
-.brand-link { 
-    display: flex; 
-    align-items: center; 
-    text-decoration: none; 
-}
+.nav-left .brand-link { display: flex; align-items: center; text-decoration: none; }
+.nav-logo { width: 85px; height: 85px; object-fit: contain; }
 
-.nav-logo {
-    width: 100px;
-    height: 100px;
-    object-fit: contain;
-    transition: transform 0.3s ease;
-}
-
-.brand-name {
-    color: var(--p-color);
-    font-weight: 800;
-    font-size: 1.7rem;
-    margin-left: 15px;
-    letter-spacing: -1px;
-}
-
-/* --- BOTONES NAVBAR --- */
+/* Grupo de botones a la derecha */
 .nav-right { 
     display: flex; 
     align-items: center; 
-    gap: 15px; 
+    gap: 25px; /* Espacio entre los 3 elementos */
 }
 
-.nav-btn-professional {
-    background: var(--p-gradient) !important;
-    color: #ffffff !important;
-    padding: 0 30px; 
-    height: 52px;
-    border-radius: var(--radius-md);
-    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.2);
-    cursor: pointer;
-    font-weight: 700;
-    font-size: 0.95rem;
+/* BOTÓN NUEVA MASCOTA (Verde) */
+.btn-nueva-publicacion {
+    background: var(--btn-green);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 14px;
     display: flex;
     align-items: center;
     gap: 12px;
-    transition: all 0.3s ease;
     text-decoration: none;
-    border: none;
+    font-weight: 700;
+    transition: transform 0.2s;
+    box-shadow: 0 4px 6px rgba(0, 184, 148, 0.2);
 }
 
-.btn-about-retro {
-    background-color: #fef9c3 !important;
-    color: #334155 !important;
-    border: 2px solid #334155 !important;
-    font-weight: 700;
-    padding: 10px 20px;
-    height: 46px; 
-    border-radius: 10px;
-    cursor: pointer;
+.btn-nueva-publicacion .text-stack { display: flex; flex-direction: column; line-height: 1; }
+.btn-nueva-publicacion .upper { font-size: 0.9rem; letter-spacing: 0.5px; }
+.btn-nueva-publicacion .lower { font-size: 0.7rem; opacity: 0.9; font-weight: 400; }
+
+/* BOTÓN ACERCA DE (Gris Minimalista) */
+.btn-about-minimal {
+    background: transparent;
+    border: none;
+    color: var(--text-gray);
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 0.8rem;
+    font-weight: 600;
     text-transform: uppercase;
-    transition: all 0.2s ease;
-    box-shadow: 3px 3px 0px #334155;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+.btn-about-minimal:hover { color: var(--p-color); }
+
+/* BOTÓN INGRESAR (Azul Gradiente) */
+.nav-btn-ingresar {
+    background: var(--p-gradient);
+    color: white;
+    padding: 12px 35px;
+    border-radius: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-decoration: none;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(30, 58, 138, 0.25);
+    border: none;
+    cursor: pointer;
 }
 
-/* --- ESTRUCTURA DE LAYOUT CON SIDEBAR DINÁMICO --- */
-.layout-container { 
-    display: flex; 
-    min-height: calc(100vh - var(--nav-h)); 
-    position: relative;
-}
+.nav-btn-ingresar:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(30, 58, 138, 0.35); }
 
+/* SIDEBAR Y CONTENIDO */
 #sidebar { 
-    width: var(--sb-w); 
-    background: var(--white); 
-    border-right: 2px solid var(--border-color); 
-    position: fixed; 
-    top: var(--nav-h); 
-    bottom: 0; 
-    left: 0;
-    z-index: 1000; 
-    
-    /* SOLUCIÓN AL CORTE: Scroll independiente */
-    overflow-y: auto; 
+    width: var(--sb-w); background: var(--white); border-right: 2px solid var(--border-color); 
+    position: fixed; top: var(--nav-h); bottom: 0; left: 0; z-index: 1000; 
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
-
-/* Estado oculto: Se desplaza a la izquierda */
-#sidebar.collapsed {
-    transform: translateX(-100%);
-}
+#sidebar.collapsed { transform: translateX(calc(var(--sb-w) * -1 + 40px)); }
 
 #main-content { 
-    flex: 1; 
-    margin-left: var(--sb-w); 
-    padding: 40px; 
+    margin-left: var(--sb-w); padding: 40px; 
     transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
 }
+#main-content.expanded { margin-left: 45px; }
 
-/* Cuando el sidebar se oculta, el contenido principal se expande */
-#main-content.expanded {
-    margin-left: 0;
+/* RESPONSIVE */
+@media (max-width: 900px) {
+    .btn-about-minimal { display: none; }
+    .top-navbar { padding: 0 20px; }
 }
 
-/* --- BOTÓN DE FLECHA (Toggle Btn) --- */
-#toggle-btn {
-    position: fixed;
-    /* Posición pegado al sidebar abierto */
-    left: calc(var(--sb-w) + 15px); 
-    top: calc(var(--nav-h) + 20px);
-    z-index: 1100;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 42px;
-    height: 42px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    
-    /* ESTILO: Azul esfumado con borde negro */
-    background: var(--arrow-gradient);
-    border: 2px solid #000000;
-    color: white;
-    border-radius: 8px;
-    box-shadow: 3px 3px 0px rgba(0,0,0,1);
-}
-
-/* Sincronización con el estado data-sidebar del HTML */
-[data-sidebar="collapsed"] #toggle-btn {
-    left: 15px;
-}
-
-#toggle-btn:hover {
-    transform: scale(1.05);
-    filter: brightness(1.1);
-}
-
-/* --- DROPDOWN MENÚ PROFESIONAL REPARADO --- */
-.admin-menu-container {
-    position: relative;
-}
-
-.admin-dropdown {
-    position: absolute;
-    top: calc(100% + 15px);
-    right: 0;
-    width: 260px;
-    background-color: #ffffff !important;
-    border-radius: 24px !important; /* Bordes bien redondos */
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2) !important;
-    padding: 10px !important;
-    z-index: 9999 !important;
-    list-style: none !important;
-    display: none; /* Se controla con el checkbox */
-    border: 1px solid #f1f5f9 !important;
-}
-
-/* Lógica de apertura */
-#menu-toggle:checked ~ .admin-dropdown {
-    display: block !important;
-}
-
-/* Estilo de los links dentro del menú */
-.admin-dropdown li a {
-    display: flex !important;
-    align-items: center !important;
-    gap: 12px !important;
-    padding: 12px 15px !important;
-    text-decoration: none !important;
-    color: #334155 !important;
-    font-weight: 700 !important;
-    font-size: 0.9rem !important;
-    border-radius: 15px !important;
-    transition: all 0.3s ease !important;
-}
-
-.admin-dropdown li a:hover {
-    background-color: #2563eb !important;
-    color: #ffffff !important;
-}
-
-/* Íconos dentro del menú */
-.admin-dropdown li a i {
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #f8fafc;
-    border-radius: 10px;
-    color: #2563eb;
-    transition: all 0.3s ease;
-}
-
-.admin-dropdown li a:hover i {
-    background: rgba(255,255,255,0.2);
-    color: #ffffff;
-}
-
-.menu-divider {
-    height: 1px;
-    background: #f1f5f9;
-    margin: 8px 10px;
-}
-
-.logout-link {
-    color: #ef4444 !important;
-}
-
-.logout-link:hover {
-    background-color: #ef4444 !important;
-    color: #ffffff !important;
-}
-/* --- RESPONSIVO --- */
-@media (max-width: 768px) {
-    :root { 
-        --nav-h: 90px; 
-    }
-    
-    .top-navbar { 
-        height: var(--nav-h); 
-        padding: 0 15px; 
-    }
-    
-    .nav-logo { 
-        width: 70px; 
-        height: 70px; 
-    }
-    
-    .brand-name { 
-        display: none; 
-    }
-    
-    #sidebar {
-        width: 80%; /* Más protagonismo en móvil al abrirse */
-    }
-
-    #main-content { 
-        margin-left: 0 !important;
-        padding: 20px; 
-    }
-
-    [data-sidebar="collapsed"] #toggle-btn {
-        left: 10px;
-    }
+@media (max-width: 600px) {
+    :root { --nav-h: 80px; }
+    .nav-logo { width: 60px; height: 60px; }
+    .nav-btn-ingresar { padding: 10px 15px; font-size: 0.75rem; }
+    .btn-nueva-publicacion .upper { font-size: 0.75rem; }
+    .btn-nueva-publicacion .lower { display: none; }
 }

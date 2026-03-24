@@ -1,169 +1,130 @@
-{{!-- views/about.hbs --}}
+{{!-- views/aboutus.hbs --}}
 
 <style>
+    /* 1. OCULTAR EL SIDEBAR SOLO EN ESTA VISTA */
+    #sidebar {
+        display: none !important;
+    }
+
+    /* 2. QUITAR EL MARGEN IZQUIERDO DEL CONTENEDOR PRINCIPAL */
+    #main-content {
+        margin-left: 0 !important;
+        width: 100% !important;
+        padding: 0 !important;
+        transition: none !important; /* Evita saltos visuales */
+    }
+
+    /* 3. CENTRADO ABSOLUTO DEL CONTENIDO */
     .about-wrapper {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 40px 20px;
-        animation: fadeInAbout 0.8s ease-out;
+        max-width: 1100px;
+        margin: 0 auto !important;
+        padding: 60px 20px;
+        animation: fadeInAbout 0.6s ease-out;
     }
 
-    .about-hero {
-        text-align: center;
-        margin-bottom: 60px;
-    }
-
-    .hero-title {
-        font-size: 3rem;
-        font-weight: 900;
-        color: #0f172a;
-        margin-bottom: 15px;
-        letter-spacing: -1.5px;
-    }
-
-    .hero-subtitle {
-        font-size: 1.25rem;
-        color: #64748b;
-        max-width: 800px;
-        margin: 0 auto;
-        line-height: 1.6;
-    }
-
+    /* Ajustes estéticos adicionales */
+    .about-hero { text-align: center; margin-bottom: 50px; }
+    .hero-title { font-size: 3.2rem; font-weight: 900; color: #1e293b; letter-spacing: -1px; }
+    
     .mission-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 30px;
-        margin-bottom: 80px;
+        gap: 25px;
+        margin-bottom: 60px;
     }
 
     .info-card {
         background: white;
-        padding: 45px 35px;
-        border-radius: 28px;
+        padding: 40px;
+        border-radius: 24px;
         text-align: center;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.04);
-        border: 1px solid #f1f5f9;
-        transition: all 0.3s ease;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
     }
-
-    .info-card:hover {
-        transform: translateY(-10px);
-    }
-
-    .icon-circle {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 25px;
-        font-size: 1.8rem;
-    }
-
-    .icon-circle.amarillo { background: #fef9c3; color: #ca8a04; border: 3px solid #fde047; }
-    .icon-circle.azul { background: #dbeafe; color: #2563eb; border: 3px solid #bfdbfe; }
-    .icon-circle.rojo { background: #fee2e2; color: #ef4444; border: 3px solid #fecaca; }
 
     .contact-container {
         background: white;
-        border-radius: 35px;
-        padding: 60px;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08);
-        border: 1px solid #f1f5f9;
-    }
-
-    .contact-grid {
-        display: grid;
-        grid-template-columns: 1fr 1.2fr;
-        gap: 60px;
-        align-items: center;
-    }
-
-    .form-box {
-        background: #f8fafc;
-        padding: 40px;
-        border-radius: 25px;
+        border-radius: 30px;
+        padding: 50px;
         border: 1px solid #e2e8f0;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.05);
     }
 
-    .form-group { margin-bottom: 20px; }
-    .form-group label { display: block; font-weight: 800; margin-bottom: 10px; color: #475569; }
+    .contact-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 50px; align-items: center; }
 
-    .form-control {
+    .btn-submit-contact {
         width: 100%;
-        padding: 15px;
-        border: 2px solid #e2e8f0;
-        border-radius: 15px;
-        font-family: inherit;
+        height: 60px;
+        background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-weight: 700;
+        cursor: pointer;
     }
 
     @keyframes fadeInAbout {
-        from { opacity: 0; transform: translateY(30px); }
-        to { opacity: 1; transform: translateY(0); }
+        from { opacity: 0; transform: scale(0.98); }
+        to { opacity: 1; transform: scale(1); }
     }
 
-    @media (max-width: 992px) {
+    @media (max-width: 768px) {
         .contact-grid { grid-template-columns: 1fr; }
-        .hero-title { font-size: 2.5rem; }
+        .hero-title { font-size: 2.2rem; }
     }
 </style>
 
 <div class="about-wrapper">
     <header class="about-hero">
         <h1 class="hero-title">Unidos por los que no tienen voz</h1>
-        <p class="hero-subtitle">
-            Somos un grupo de profesionales en tecnología y voluntarios comprometidos con nuestros hermanos de cuatro patas. 
+        <p class="hero-subtitle" style="font-size: 1.2rem; color: #64748b; margin-top: 15px;">
+            Somos un equipo comprometido con el reencuentro de familias multiespecie.
         </p>
     </header>
 
     <section class="mission-grid">
         <div class="info-card">
-            <div class="icon-circle amarillo"><i class="fas fa-laptop-code"></i></div>
+            <div style="font-size: 2.5rem; color: #ca8a04; margin-bottom: 15px;"><i class="fas fa-laptop-code"></i></div>
             <h3>Desarrollo Solidario</h3>
-            <p>Arquitectos de software dedicados a crear una plataforma rápida e intuitiva.</p>
+            <p>Tecnología aplicada para que cada mascota perdida tenga una oportunidad real de volver.</p>
         </div>
-
         <div class="info-card">
-            <div class="icon-circle azul"><i class="fas fa-shield-heart"></i></div>
-            <h3>Tu Mascota a Salvo</h3>
-            <p>Centralizamos reportes para acelerar los rescates y reencuentros.</p>
+            <div style="font-size: 2.5rem; color: #2563eb; margin-bottom: 15px;"><i class="fas fa-shield-heart"></i></div>
+            <h3>Seguridad y Rapidez</h3>
+            <p>Alertas inmediatas y gestión eficiente de reportes en tiempo real.</p>
         </div>
-
         <div class="info-card">
-            <div class="icon-circle rojo"><i class="fas fa-hand-holding-heart"></i></div>
-            <h3>Red Comunitaria</h3>
-            <p>Fomentamos la colaboración entre vecinos, veterinarias y protectoras.</p>
+            <div style="font-size: 2.5rem; color: #ef4444; margin-bottom: 15px;"><i class="fas fa-users"></i></div>
+            <h3>Comunidad Activa</h3>
+            <p>Conectamos vecinos, rescatistas y veterinarias en una sola red solidaria.</p>
         </div>
     </section>
 
     <section class="contact-container">
         <div class="contact-grid">
-            <div class="contact-text">
-                <h2>¿Tenés una duda?</h2>
-                <p>Escribinos y nos pondremos en contacto (11) 7060 - 9536 </p>
-                <div style="margin-top: 20px; font-weight: 700; color: #2563eb;">
-                    <i class="fas fa-paper-plane"></i> contacto@ayudameavolver.com.ar
+            <div class="contact-info">
+                <h2 style="font-size: 2rem; margin-bottom: 20px;">¿Dudas o sugerencias?</h2>
+                <p>Tu opinión nos ayuda a mejorar la plataforma para todos.</p>
+                <div style="margin-top: 30px;">
+                    <p style="margin-bottom: 10px;"><i class="fas fa-phone-alt" style="color: #2563eb;"></i> (11) 7060 - 9536</p>
+                    <p><i class="fas fa-envelope" style="color: #2563eb;"></i> contacto@ayudameavolver.com.ar</p>
                 </div>
             </div>
-
-            <div class="form-box">
+            <div class="form-box" style="background: #f8fafc; padding: 30px; border-radius: 20px;">
                 <form id="aboutContactForm">
-                    <div class="form-group">
-                        <label>Nombre Completo</label>
-                        <input type="text" class="form-control" placeholder="Ej: Juan Pérez" required>
+                    <div style="margin-bottom: 15px;">
+                        <label style="display:block; margin-bottom:5px; font-weight:700;">Nombre</label>
+                        <input type="text" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ccc;" required>
                     </div>
-                    <div class="form-group">
-                        <label>Correo</label>
-                        <input type="email" class="form-control" placeholder="tu@email.com" required>
+                    <div style="margin-bottom: 15px;">
+                        <label style="display:block; margin-bottom:5px; font-weight:700;">Email</label>
+                        <input type="email" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ccc;" required>
                     </div>
-                    <div class="form-group">
-                        <label>Mensaje</label>
-                        <textarea class="form-control" rows="4" placeholder="¿Cómo podemos ayudarte?" required></textarea>
+                    <div style="margin-bottom: 20px;">
+                        <label style="display:block; margin-bottom:5px; font-weight:700;">Mensaje</label>
+                        <textarea rows="4" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ccc;" required></textarea>
                     </div>
-                    <button type="submit" class="nav-btn-professional" style="width: 100%; justify-content: center; height: 65px; border: none;">
-                        ENVIAR MENSAJE
-                    </button>
+                    <button type="submit" class="btn-submit-contact">ENVIAR CONSULTA</button>
                 </form>
             </div>
         </div>
