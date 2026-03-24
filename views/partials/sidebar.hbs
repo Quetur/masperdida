@@ -115,6 +115,8 @@
 
         groups.forEach(group => {
             const checkboxes = group.querySelectorAll('input[type="checkbox"]');
+            
+            // Buscamos si este grupo es el de "Tipo de Mascota" viendo el título
             const isPetTypeGroup = group.querySelector('.filter-section-title')?.textContent.includes('Tipo de Mascota');
 
             checkboxes.forEach(checkbox => {
@@ -123,8 +125,13 @@
                         checkboxes.forEach(cb => { if (cb !== this) cb.checked = false; });
                     }
                     
+                    // --- CAMBIO SOLICITADO ---
+                    // Solo guardamos el estado "colapsado" si pertenece a Tipo de Mascota
                     if (isPetTypeGroup) {
                         localStorage.setItem('sidebar_collapsed', 'true');
+                    } else {
+                        // Opcional: Si querés que al tocar "Estado" se mantenga abierto (si estaba abierto)
+                        // localStorage.setItem('sidebar_collapsed', 'false'); 
                     }
                     
                     if (loader) loader.style.display = 'flex';
