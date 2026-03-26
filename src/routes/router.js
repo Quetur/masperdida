@@ -217,16 +217,19 @@ router.get("/mascotacambia", isAuthenticated, async (req, res) => {
   console.log("------------------------------------------");
 
   // 3. Definimos la consulta SQL según el rol
+  // Nota: Cambié el final de la consulta para ordenar por id_mascota DESC (el más nuevo arriba)
   let query = "SELECT mascota.*, c.des as cat_des, mascota.des as prod_des FROM mascota INNER JOIN categoria c ON c.id_categoria = mascota.id_categoria";
   let params = [];
 
-  // Si NO es admin, filtramos por su ID (o el campo que uses para vincular mascota-dueño)
+  // Si NO es admin, filtramos por su ID
   if (user.categoria !== 'admin') {
-    query += " WHERE mascota.id_usuario = ?"; // Ajusta 'id_usuario' al nombre real de tu columna
+    query += " WHERE mascota.id_usuario = ?"; 
     params.push(user.id);
   }
 
-  query += " ORDER BY mascota.id_categoria, mascota.id_raza, mascota.orden";
+  // MODIFICACIÓN: Ordenamos por ID de forma descendente (el último creado aparece primero)
+  // Si tienes una columna llamada 'fecha', puedes usar: ORDER BY mascota.fecha DESC
+  query += " ORDER BY mascota.id_mascota DESC";
 
   try {
     const [data] = await pool.query(query, params);
@@ -234,9 +237,9 @@ router.get("/mascotacambia", isAuthenticated, async (req, res) => {
     res.render("mascotacambia", { 
       data,
       title: "Administrar mascotas",
-      hideSidebar: true,
+      hideSidebar: true, // Mantiene el centrado que configuramos antes
       usuario: user.nombre,
-      role: user.categoria // Pasamos el rol al HBS por si lo necesitas
+      role: user.categoria 
     });
   } catch (error) {
     console.error("Error en /mascotacambia:", error);

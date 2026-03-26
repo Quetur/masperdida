@@ -297,10 +297,14 @@ router.post(
   upload.single("foto2"),
   async (req, res) => {
     const { id } = req.params;
-    console.log("Modificando Mascota ID:", id, "Body:", req.body);
+    const user = req.session.user; // Obtenemos el usuario de la sesión
+    
+    console.log("--- Modificando Mascota ---");
+    console.log("ID Mascota:", id);
+    console.log("Usuario:", user.nombre, "| Rol:", user.categoria);
 
     try {
-      // 1. Extraer datos (usando los mismos nombres que en mascota_nuevo_graba)
+      // 1. Extraer datos del formulario
       const {
         id_categoria,
         id_tipo,
@@ -308,9 +312,9 @@ router.post(
         titulo,
         des,
         nota,
-        calle,        // Este es el campo 'direccion' en tu DB
-        ciudad,       // Lo usaremos para armar la dirección final o si tenés campo ciudad
-        provincia,    // Lo mismo para provincia
+        calle,        
+        ciudad,       
+        provincia,    
         latitud,
         longitud,
         visible
@@ -319,21 +323,21 @@ router.post(
       // 2. Gestión de la Imagen (Mantener anterior o subir nueva)
       let fotoFinal;
       if (req.file) {
+        // Si subió una nueva, usamos la ubicación de S3/Cloud o el nombre del archivo local
         fotoFinal = req.file.location || req.file.filename;
       } else {
+        // Si no subió nada, mantenemos la que ya estaba en la DB
         const [rows] = await pool.query("SELECT foto2 FROM mascota WHERE id_mascota = ?", [id]);
         fotoFinal = rows[0].foto2;
       }
 
-      // 3. Preparar la dirección final 
-      // Si el usuario editó calle, ciudad y provincia por separado, los unimos
-      // Si solo usás el campo 'calle' como dirección completa, usá: const direccionFinal = calle
+      // 3. Preparar la dirección final (Concatenamos los campos del mapa)
       const direccionFinal = `${calle || ""}, ${ciudad || ""}, ${provincia || ""}`
         .trim()
         .replace(/^,|,$/g, '')
         .substring(0, 100);
 
-      // 4. Construir objeto para UPDATE respetando tu estructura
+      // 4. Construir objeto para UPDATE (Asegúrate que estos nombres coincidan con tu DB)
       const valoresUpdate = {
         id_categoria: id_categoria,
         id_tipo: id_tipo,
@@ -346,36 +350,51 @@ router.post(
         longitud: longitud ? parseFloat(longitud) : 0,
         foto2: fotoFinal,
         visible: visible || 1
-        // Si tenés campos específicos para ciudad/provincia en la tabla, agregalos acá:
-        // id_provincia: req.body.id_provincia 
       };
 
-      // 5. Ejecutar UPDATE
+      // 5. Ejecutar la actualización en la base de datos
       await pool.query("UPDATE mascota SET ? WHERE id_mascota = ?", [valoresUpdate, id]);
 
-      // 6. Preparar datos para volver al listado
-      const id_usuario = req.session.user ? req.session.user.id : null;
-      const [data] = await pool.query(
-        "SELECT m.*, c.des as cat_des FROM mascota m " +
-        "INNER JOIN categoria c ON c.id_categoria = m.id_categoria " +
-        "WHERE m.id_usuario = ? ORDER BY m.id_mascota DESC",
-        [id_usuario]
-      );
+      // 6. Preparar datos para volver al listado con LÓGICA DE ADMIN
+      // Queremos que al terminar, el Admin siga viendo TODO y el usuario solo lo SUYO
+      let queryListado = `
+        SELECT m.*, c.des as cat_des 
+        FROM mascota m 
+        INNER JOIN categoria c ON c.id_categoria = m.id_categoria
+      `;
+      let paramsListado = [];
 
-      // 7. Renderizar respuesta con SweetAlert
+      if (user.categoria !== 'admin') {
+        // Si no es admin, filtramos por su ID de usuario
+        queryListado += " WHERE m.id_usuario = ?";
+        paramsListado.push(user.id);
+      }
+
+      queryListado += " ORDER BY m.id_mascota DESC";
+
+      const [data] = await pool.query(queryListado, paramsListado);
+
+      // 7. Renderizar la vista de éxito
+      // 'hideSidebar: true' asegura que el contenido se centre y no deje el hueco del sidebar
       res.render("mascotacambia", {
         data,
         alert: true,
         alertTitle: "🐾 ¡Actualizado!",
-        alertMessage: "La información de " + valoresUpdate.titulo + " se actualizó correctamente.",
+        alertMessage: `La información de "${valoresUpdate.titulo}" se actualizó correctamente.`,
         alertIcon: "success",
         ruta: "mascotacambia",
+        hideSidebar: true, // <--- CRÍTICO: Centra el contenido al volver
+        usuario: user.nombre,
+        isAdmin: user.categoria === 'admin'
       });
 
     } catch (error) {
-      console.error("❌ Error al modificar:", error);
-      res.status(500).render("modificarmascota", {
+      console.error("❌ Error crítico al modificar:", error);
+      
+      // En caso de error, intentamos volver al formulario con los datos cargados
+      res.status(500).render("mascotamodifica", {
         pro: req.body,
+        hideSidebar: true,
         error: "No se pudieron guardar los cambios: " + error.message
       });
     }
@@ -493,16 +512,15 @@ router.post(
         longitud,
         calle,
         celular, 
-        nombre_contacto
+        nombre_contacto,
+        nota // <--- AGREGAMOS ESTO para recibir lo que manda el robot
       } = req.body;
 
-      // 1. El celular como id_usuario
       const celularLimpio = celular ? celular.replace(/\D/g, "") : null;
       const id_final = celularLimpio ? parseInt(celularLimpio) : 0;
       const hoy = new Date().toISOString().split('T')[0];
       const direccionFinal = (calle || "Ituzaingó, Buenos Aires").substring(0, 100);
 
-      // 2. Construir el objeto incluyendo los campos de "descuento" obligatorios
       const newmascota = {
         orden: "1",
         fecha_suceso: hoy,
@@ -512,8 +530,15 @@ router.post(
         sexo: sexo || "Macho",
         foto2: req.file ? (req.file.location || req.file.filename) : "/img/iconoperrogato.png",
         titulo: (titulo || "Sin Nombre").substring(0, 70),
-        des: `Contacto: ${nombre_contacto || 'Usuario'}`.substring(0, 70),
-        nota: `Tel: ${celular || ''}`, 
+        
+        // 🏁 CAMBIO CLAVE 1: Si el robot manda una nota (con el link), la usamos. 
+        // Si no, caemos en el default del Tel.
+        nota: nota || `Tel: ${celular || ''}`, 
+        
+        // 🏁 CAMBIO CLAVE 2: En la descripción podemos poner el nombre 
+        // pero dándole más espacio si querés (opcional)
+        des: `Contacto: ${nombre_contacto || 'Usuario'}`.substring(0, 250), 
+
         id_usuario: id_final,
         id_localidad: 1, 
         id_provincia: 1, 
@@ -523,14 +548,12 @@ router.post(
         longitud: longitud ? parseFloat(longitud) : 0,
         visible: 1,
         direccion: direccionFinal,
-        // --- CAMPOS OBLIGATORIOS QUE FALTABAN ---
         descuentoxunidad: 0,
         descuentoapartir: 0
       };
 
-      console.log("📝 Grabando en DB con campos de descuento en 0...");
+      console.log("📝 Grabando en DB con la nota real...");
 
-      // 3. Ejecutar INSERT
       const [result] = await pool.query("INSERT INTO mascota SET ?", [newmascota]);
 
       res.status(200).json({
