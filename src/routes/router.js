@@ -206,30 +206,38 @@ router.get("/mailok", async (req, res) => {
 
 
 router.get("/mascotacambia", isAuthenticated, async (req, res) => {
-  // 1. Obtenemos el usuario de la sesión
   const user = req.session.user;
 
-  // 2. Log por consola para verificar el rol
   console.log("------------------------------------------");
-  console.log(`USUARIO: ${user.nombre}`);
-  console.log(`CATEGORIA: ${user.categoria}`);
-  console.log(`¿ES ADMIN?: ${user.categoria === 'admin' ? 'SÍ, TIENE PERMISOS' : 'NO, ES USUARIO COMÚN'}`);
+  console.log(`USUARIO: ${user.nombre} | ROL: ${user.categoria}`);
   console.log("------------------------------------------");
 
-  // 3. Definimos la consulta SQL según el rol
-  // Nota: Cambié el final de la consulta para ordenar por id_mascota DESC (el más nuevo arriba)
-  let query = "SELECT mascota.*, c.des as cat_des, mascota.des as prod_des FROM mascota INNER JOIN categoria c ON c.id_categoria = mascota.id_categoria";
+  // CAMBIO CLAVE: Usamos LEFT JOIN en todas las tablas relacionadas
+  // Esto evita que los registros desaparezcan si falta algún dato
+  let query = `
+    SELECT 
+        m.*, 
+        c.des AS cat_des, 
+        m.des AS prod_des,
+        t.des AS tipo_des,
+        r.des AS raza_des,
+        DATE_FORMAT(m.fecha_suceso, '%d/%m/%Y') AS fecha_formateada
+    FROM mascota m
+    LEFT JOIN categoria c ON m.id_categoria = c.id_categoria
+    LEFT JOIN tipo t ON m.id_tipo = t.id_tipo
+    LEFT JOIN raza r ON m.id_raza = r.id_raza
+  `;
+  
   let params = [];
 
-  // Si NO es admin, filtramos por su ID
   if (user.categoria !== 'admin') {
-    query += " WHERE mascota.id_usuario = ?"; 
+    query += " WHERE m.id_usuario = ?"; 
     params.push(user.id);
   }
 
-  // MODIFICACIÓN: Ordenamos por ID de forma descendente (el último creado aparece primero)
-  // Si tienes una columna llamada 'fecha', puedes usar: ORDER BY mascota.fecha DESC
-  query += " ORDER BY mascota.id_mascota DESC";
+  query += " ORDER BY m.id_mascota DESC";
+  
+  console.log("Consulta optimizada ejecutada");
 
   try {
     const [data] = await pool.query(query, params);
@@ -237,13 +245,13 @@ router.get("/mascotacambia", isAuthenticated, async (req, res) => {
     res.render("mascotacambia", { 
       data,
       title: "Administrar mascotas",
-      hideSidebar: true, // Mantiene el centrado que configuramos antes
+      hideSidebar: true, 
       usuario: user.nombre,
       role: user.categoria 
     });
   } catch (error) {
     console.error("Error en /mascotacambia:", error);
-    res.status(500).send("Error interno");
+    res.status(500).send("Error interno. Revisar consola.");
   }
 });
 

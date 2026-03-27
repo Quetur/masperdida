@@ -93,6 +93,7 @@ function cerrarPopUp() {
 }
 
 // --- MAPA GENERAL ---
+// --- MAPA GENERAL ---
 function abrirMapaGeneral() {
     document.getElementById('modal-mapa-general').style.display = 'flex';
     document.body.style.overflow = 'hidden';
@@ -108,11 +109,19 @@ function abrirMapaGeneral() {
             attribution: '© OpenStreetMap'
         }).addTo(mapaGeneral);
 
-        markersGroup = L.layerGroup().addTo(mapaGeneral);
+        // --- CAMBIO 1: Cambiar L.layerGroup() por L.markerClusterGroup() ---
+        markersGroup = L.markerClusterGroup({
+            spiderfyOnMaxZoom: true,   // Separa marcadores en la misma posición al zoom máximo
+            showCoverageOnHover: false, // No muestra el área del cluster al pasar el mouse
+            zoomToBoundsOnClick: true, // Al hacer click en el número, hace zoom a la zona
+            disableClusteringAtZoom: 18 // Opcional: a este zoom se ven todos sueltos
+        }).addTo(mapaGeneral);
+
         L.control.zoom({ position: 'bottomright' }).addTo(mapaGeneral);
 
         // Crear marcadores usando los datos de las cards existentes
         const buttons = document.querySelectorAll('.btn-view');
+        
         buttons.forEach(btn => {
             const lat = parseFloat(btn.dataset.lat);
             const lng = parseFloat(btn.dataset.lng);
@@ -131,33 +140,40 @@ function abrirMapaGeneral() {
 
                 const m = L.marker([lat, lng], { icon });
                 
-                // Al hacer click en un marcador, abrimos el PopUp con la info de ese botón
                 m.on('click', () => {
                     mostrarPopUp(btn); 
                 });
 
+                // --- CAMBIO 2: Agregar el marcador directamente al grupo de cluster ---
+                markersGroup.addLayer(m);
+                
+                // Guardamos la referencia por si la necesitas luego
                 markersCache.push(m);
             }
         });
         
-        L.layerGroup(markersCache).addTo(markersGroup);
+        // --- CAMBIO 3: Borramos la línea L.layerGroup(markersCache).addTo(markersGroup); ---
+        // Ya no es necesaria porque addLayer(m) ya los metió al grupo de clusters.
     }
 
-    // Forzar re-render del mapa para evitar cuadros grises
+    // Forzar re-render del mapa
     setTimeout(() => {
         mapaGeneral.invalidateSize();
-        // Intentar geolocalizar al usuario
+        
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(pos => {
                 const coords = [pos.coords.latitude, pos.coords.longitude];
                 mapaGeneral.flyTo(coords, 14, { animate: true, duration: 0.8 });
+                
+                // El marcador de "tu ubicación" lo agregamos directo al mapa o un grupo aparte
+                // para que no se mezcle con las mascotas en el cluster
                 L.circleMarker(coords, { 
                     radius: 8, 
                     color: '#fff', 
                     weight: 3, 
                     fillColor: '#2563eb', 
                     fillOpacity: 1 
-                }).addTo(markersGroup);
+                }).addTo(mapaGeneral); 
             }, null, { enableHighAccuracy: false });
         }
     }, 200);

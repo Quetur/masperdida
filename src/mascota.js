@@ -422,24 +422,36 @@ router.get("/tildar/:id", isAuthenticated, async (req, res) => {
     "update mascota set visible=1 where id_mascota = ?",
     [id]
   );
+  /*
   const [data] = await pool.query(
     "SELECT *, c.des as cat_des, mascota.des as prod_des  FROM mascota INNER JOIN categoria c ON c.id_categoria = mascota.id_categoria ORDER BY mascota.id_categoria,mascota.id_raza,mascota.orden"
   );
   res.render("mascotacambia", { data });
+  */
+   res.redirect("/mascotacambia");
 });
 
 // Cambiar estado a Oculto
 router.get("/destildar/:id", isAuthenticated, async (req, res) => {
-  const { id } = req.params;
-  console.log("destildar");
-  const pro = await pool.query(
-    "update mascota set visible=0 where id_mascota = ?",
-    [id]
-  );
-  const [data] = await pool.query(
-    "SELECT *, c.des as cat_des, mascota.des as prod_des  FROM mascota INNER JOIN categoria c ON c.id_categoria = mascota.id_categoria ORDER BY mascota.id_categoria,mascota.id_raza,mascota.orden"
-  );
-  res.render("mascotacambia", { data });
+  try {
+    const { id } = req.params;
+    
+    console.log(`Destildando mascota ID: ${id}`);
+
+    // Ejecutamos la actualización
+    await pool.query(
+      "UPDATE mascota SET visible = 0 WHERE id_mascota = ?",
+      [id]
+    );
+
+    // CORRECTO: Redireccionamos desde el servidor a la ruta deseada
+    // Si quieres ir a la pantalla de "nueva mascota":
+    res.redirect("/mascotacambia");
+
+  } catch (error) {
+    console.error("Error al destildar:", error);
+    res.status(500).send("Error al procesar la solicitud");
+  }
 });
 
 router.get("/api/localidades/:id_provincia", async (req, res) => {
