@@ -310,7 +310,7 @@ router.get("/modificarmascota/:id", async (req, res) => {
 });
 
 
-
+/*
 router.post("/send-email", async (req, res) => {
   console.log("send email", req.body);
   const {
@@ -517,7 +517,7 @@ router.post("/send-email", async (req, res) => {
   /*const pedido_nro = await Genera_Pedido(fecha, horalocal, cliente_cod,
     cliente_des, cliente_tel, cliente_dir, total, nota, cliente_saldoAnt,
     mascota, prod_id, desc, cant, prec, sttl)
-*/
+
 
   // envio el mail
 
@@ -536,7 +536,7 @@ router.post("/send-email", async (req, res) => {
     res.render("mailok");
   }
 });
-
+*/
 async function enviarWhatsapp(mensaje, telefono, idbasededatos) {
   // Asegúrate de que la URL termine en /enviar-pedido
   const url = process.env.SERVER_WHATSAPP_URL;
@@ -552,7 +552,7 @@ async function enviarWhatsapp(mensaje, telefono, idbasededatos) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Bearer mi_token_secreto_123", // Verifica que coincida con el .env del servidor
+        Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}`
       },
       body: JSON.stringify(data),
     });
@@ -593,7 +593,7 @@ async function enviarWhatsapp(mensaje, telefono, idbasededatos) {
 
 
 
-async function Actuali_Cliente(
+/*async function Actuali_Cliente(
   telefono,
   cliente,
   direccion,
@@ -624,8 +624,9 @@ async function Actuali_Cliente(
     console.log("error jesus :", e);
   }
 }
+*/
 
-async function busca_cliente(telefono) {
+/*async function busca_cliente(telefono) {
   let rows = "";
   let cliente_cod = "";
   let cliente_saldoAnt = "";
@@ -650,8 +651,9 @@ async function busca_cliente(telefono) {
   }
   return cliente_cod;
 }
+*/
 
-async function nuevo_cliente(cel, cliente_des, direccion, localidad, correo) {
+/*async function nuevo_cliente(cel, cliente_des, direccion, localidad, correo) {
   console.log("entro en nuevo");
   var lineadesql =
     "INSERT INTO cliente values (NULL,'" +
@@ -743,7 +745,7 @@ router.get("/api/direccion/:ubi", async (req, res) => {
 console.log("entro en /api/direccion/:ubi", ubiParams, "keyDom", keyDom)
 
   try {
-    const response = await fetch(`https://api.geoapify.com{ubiParams}&apiKey=${keyDom}`);
+    const response = await fetch(`https://api.geoapify.com${ubiParams}&apiKey=${keyDom}`);
     const result = await response.json();
     console.log("resultado del gps", result)
     if (result.features && result.features.length > 0) {
@@ -764,7 +766,7 @@ console.log("entro en /api/direccion/:ubi", ubiParams, "keyDom", keyDom)
     res.status(500).json({ error: error.message });
   }
 });
- 
+*/
 
 router.get('/about', (req, res) => {
     res.render('about', { 

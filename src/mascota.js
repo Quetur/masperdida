@@ -428,7 +428,7 @@ router.get("/tildar/:id", isAuthenticated, async (req, res) => {
   );
   res.render("mascotacambia", { data });
   */
-   res.redirect("/mascotacambia");
+   res.redirect("/mascotacambia");.0
 });
 
 // Cambiar estado a Oculto

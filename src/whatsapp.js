@@ -53,7 +53,7 @@ async function enviarWhatsapp(mensaje, telefono, idbasededatos) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Bearer mi_token_secreto_123", // Verifica que coincida con el .env del servidor
+        Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}`
       },
       body: JSON.stringify(data),
     });
