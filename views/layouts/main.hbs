@@ -4,7 +4,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mascota Perdida</title>
+    
+    <title>Mascota Perdida | Red de búsqueda de animales extraviados</title>
+    <meta name="description" content="Portal comunitario para encontrar mascotas perdidas. Publicá gratis el aviso de tu perro o gato desaparecido y conectá con personas dispuestas a ayudar.">
+    <meta name="keywords" content="mascotas perdidas, perros perdidos, encontrar gato, red de mascotas, animales extraviados">
+    <link rel="canonical" href="https://mascotaperdida.com.ar" />
+
+    <meta property="og:title" content="Mascota Perdida - Ayudalos a volver a casa">
+    <meta property="og:description" content="Si perdiste a tu mascota o encontraste una, publicalo acá. ¡La comunidad te ayuda!">
+    <meta property="og:image" content="https://mascotaperdida.com.ar/img/logo.png">
+    <meta property="og:url" content="https://mascotaperdida.com.ar">
+    <meta property="og:type" content="website">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Mascota Perdida",
+      "url": "https://mascotaperdida.com.ar",
+      "logo": "https://mascotaperdida.com.ar/img/logo.png",
+      "description": "Portal comunitario para la búsqueda y recuperación de mascotas perdidas."
+    }
+    </script>
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -179,9 +200,8 @@
     <header class="top-navbar">
         <div class="nav-left">
             <a href="/" class="brand-link">
-                <img src="/img/logo.png" alt="Logo" class="nav-logo" style="height: 70px;">
-                <span class="brand-name" style="color: #2563eb; font-weight: 800; margin-left: 10px;">Mascota
-                    Perdida</span>
+                <img src="/img/logo.png" alt="Mascota Perdida - Portal de búsqueda" class="nav-logo" style="height: 70px;">
+                <span class="brand-name" style="color: #2563eb; font-weight: 800; margin-left: 10px;">Mascota Perdida</span>
             </a>
         </div>
 
@@ -208,9 +228,7 @@
                     <i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i>
                 </label>
                 <ul class="admin-dropdown">
-                    <li
-                        style="padding: 5px 15px; font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">
-                        Cuenta</li>
+                    <li style="padding: 5px 15px; font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Cuenta</li>
                     <li><a href="/mascotacambia"><i class="fas fa-paw"></i> Mis Mascotas</a></li>
                     <li><a href="/perfil/editar"><i class="fas fa-user-edit"></i> Editar Perfil</a></li>
                     <li style="height: 1px; background: #eee; margin: 5px 0;"></li>
@@ -229,6 +247,8 @@
         {{/unless}}
 
         <main id="main-content" style="flex: 1; padding: 30px; transition: all 0.3s;">
+            <h1 style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0;">Red comunitaria de Mascotas Perdidas y Encontradas</h1>
+            
             {{{body}}}
         </main>
     </div>
@@ -238,14 +258,12 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            // Lógica URL React para Nueva Mascota
             const btnReact = document.getElementById('btnNuevaPublicacion');
             if (btnReact) {
                 const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
                 btnReact.href = isLocal ? `${window.location.protocol}//${window.location.hostname}:5173` : `${window.location.origin}/react/`;
             }
 
-            // --- LÓGICA SIDEBAR ---
             const sidebar = document.getElementById('sidebar');
             const content = document.getElementById('main-content');
             const toggleBtn = document.getElementById('toggle-btn');
@@ -259,22 +277,16 @@
                         : '<i class="fas fa-chevron-left"></i>';
                 };
 
-                // 1. Leemos el estado (esto ya lo tenías)
                 const isCollapsed = localStorage.getItem('sidebar_collapsed') === 'true';
-
-                // 2. ¡ESTA ES LA QUE FALTA! Ejecutamos la función apenas carga
                 applyState(isCollapsed);
 
-                // 3. Botón Manual (esto también lo tenías)
                 toggleBtn.addEventListener('click', () => {
                     const newState = !sidebar.classList.contains('collapsed');
                     localStorage.setItem('sidebar_collapsed', newState);
                     applyState(newState);
                 });
             }
-
         });
     </script>
 </body>
-
 </html>
