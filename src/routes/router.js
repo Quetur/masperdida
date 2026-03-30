@@ -12,7 +12,9 @@ import { isAuthenticated } from '../authenticated.js';
 import mascotaRoutes from "../mascota.js"; 
 import categoriaRoutes from "../categoria.js"; 
 import usuario from "../usuarioRoute.js";
+import apisexternas from "./apisexternas.js";
 
+router.use("/", apisexternas);
 router.use("/", mascotaRoutes); 
 router.use("/", categoriaRoutes);
 router.use("/", usuario);

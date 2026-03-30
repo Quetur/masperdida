@@ -35,7 +35,7 @@ const upload = multer({
 router.get("/mascotas", async (req, res) => {
   console.log("-----------------------------------------");
   console.log("📥 GET /mascotas con filtros:", req.query);
-  
+
   try {
     // 1. Obtener datos para el Sidebar
     const [categorias] = await pool.execute("SELECT id_categoria, des FROM categoria");
@@ -56,7 +56,7 @@ router.get("/mascotas", async (req, res) => {
               INNER JOIN raza e ON e.id_raza = m.id_raza 
               INNER JOIN users u ON u.id = m.id_usuario
               WHERE m.visible = 1`;
-    
+
     const params = [];
 
     // Filtros dinámicos
@@ -80,7 +80,7 @@ router.get("/mascotas", async (req, res) => {
     const mascotasFormateadas = rows.map((m) => {
       const fechaBase = m.fecha_suceso || new Date();
       const fecha = new Date(fechaBase);
-      
+
       let fechaLarga = fecha.toLocaleDateString('es-AR', {
         weekday: 'long',
         day: 'numeric',
@@ -223,7 +223,7 @@ router.post(
       // 2. Preparar valores lógicos
       const id_final = id_usuario || (req.session.user ? req.session.user.id : null);
       const hoy = new Date().toISOString().split('T')[0];
-      
+
       // Ajustamos a los nuevos 100 caracteres de tu tabla MySQL
       const direccionFinal = (calle || "Sin dirección").substring(0, 100);
 
@@ -280,7 +280,7 @@ router.post(
 
     } catch (error) {
       console.error("❌ Error en el proceso de grabación:", error);
-      
+
       // Fallback en caso de error: intenta volver al formulario con el mensaje
       res.status(500).render("mascotanuevo", {
         error: "No se pudo grabar la mascota: " + error.message,
@@ -298,7 +298,7 @@ router.post(
   async (req, res) => {
     const { id } = req.params;
     const user = req.session.user; // Obtenemos el usuario de la sesión
-    
+
     console.log("--- Modificando Mascota ---");
     console.log("ID Mascota:", id);
     console.log("Usuario:", user.nombre, "| Rol:", user.categoria);
@@ -312,9 +312,9 @@ router.post(
         titulo,
         des,
         nota,
-        calle,        
-        ciudad,       
-        provincia,    
+        calle,
+        ciudad,
+        provincia,
         latitud,
         longitud,
         visible
@@ -390,7 +390,7 @@ router.post(
 
     } catch (error) {
       console.error("❌ Error crítico al modificar:", error);
-      
+
       // En caso de error, intentamos volver al formulario con los datos cargados
       res.status(500).render("mascotamodifica", {
         pro: req.body,
@@ -407,11 +407,15 @@ router.get("/mascotadel/:id", isAuthenticated, async (req, res) => {
   const { id } = req.params;
   console.log("delete", id);
   await pool.query("DELETE FROM mascota WHERE id_mascota = ?", [id]);
-
+  res.redirect("/mascotacambia"); 
+  /*
   const [data] = await pool.query(
     "SELECT *, c.des as cat_des, mascota.des as prod_des FROM mascota INNER JOIN categoria c ON c.id_categoria = mascota.id_categoria ORDER BY mascota.id_categoria,mascota.id_raza,mascota.orden"
   );
+  
+
   res.render("mascotacambia", { data });
+  */
 });
 
 // Cambiar estado a Visible
@@ -428,14 +432,14 @@ router.get("/tildar/:id", isAuthenticated, async (req, res) => {
   );
   res.render("mascotacambia", { data });
   */
-   res.redirect("/mascotacambia");.0
+  res.redirect("/mascotacambia"); 
 });
 
 // Cambiar estado a Oculto
 router.get("/destildar/:id", isAuthenticated, async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     console.log(`Destildando mascota ID: ${id}`);
 
     // Ejecutamos la actualización
@@ -461,7 +465,7 @@ router.get("/api/localidades/:id_provincia", async (req, res) => {
   try {
     // Ajusta la consulta SQL según el nombre de tu tabla y campos
     const query = "SELECT id_localidad, descripcion FROM localidad WHERE provincia = ? ORDER BY descripcion ASC";
-    console.log("query",query)
+    console.log("query", query)
     const [rows] = await pool.query(query, [id_provincia]);
 
     if (rows.length > 0) {
@@ -478,7 +482,7 @@ router.get("/api/localidades/:id_provincia", async (req, res) => {
 // Ruta en Node.js (ej: routes/mascotas.js)
 router.get("/api/mascotanuevo_datos", async (req, res) => {
   console.log("==> [BACKEND] Recibí petición en /api/mascotanuevo_datos");
-  
+
   try {
     console.log("==> [DB] Intentando consultar categorías...");
     const [cat] = await pool.query("SELECT * FROM categoria");
@@ -494,27 +498,29 @@ router.get("/api/mascotanuevo_datos", async (req, res) => {
 
     console.log("==> [BACKEND] Enviando JSON al frontend...");
     res.json({ cat, tipo, raza });
-    
+
   } catch (error) {
     console.error("!!! [ERROR CRÍTICO EN BACKEND]:", error.message);
     console.error("Stack trace:", error.stack);
-    res.status(500).json({ 
-        error: "Error al cargar maestros", 
-        details: error.message 
+    res.status(500).json({
+      error: "Error al cargar maestros",
+      details: error.message
     });
   }
 });
 
 
-// Nueva ruta para el portal de React (Chat)
+
+// Nueva ruta para el portal de React (Chat/Robot)
 router.post(
   "/api/mascota_chat_graba",
   upload.single("foto2"),
   async (req, res) => {
     console.log("🚀 Recibiendo reporte desde el Chat - Body:", req.body);
-    
+
     try {
       const {
+        fecha_suceso,
         id_categoria,
         id_tipo,
         id_raza,
@@ -523,37 +529,46 @@ router.post(
         latitud,
         longitud,
         calle,
-        celular, 
+        celular,
         nombre_contacto,
-        nota // <--- AGREGAMOS ESTO para recibir lo que manda el robot
+        nota: notaCuerpo // Renombramos para evitar conflictos
       } = req.body;
 
+      // 1. Extraemos el link de Facebook de la nota recibida
+      const notaOriginal = notaCuerpo || '';
+      let urlFb = null;
+      
+      if (notaOriginal.includes('Link FB:')) {
+        // Dividimos y tomamos la parte después de 'Link FB: '
+        urlFb = notaOriginal.split('Link FB: ')[1].trim();
+      }
+
+      // 2. Limpieza de datos técnicos
       const celularLimpio = celular ? celular.replace(/\D/g, "") : null;
-      const id_final = celularLimpio ? parseInt(celularLimpio) : 0;
+      const id_final = (celularLimpio && celularLimpio !== '0') ? parseInt(celularLimpio) : 0;
       const hoy = new Date().toISOString().split('T')[0];
       const direccionFinal = (calle || "Ituzaingó, Buenos Aires").substring(0, 100);
 
+      // 3. Construcción del objeto para la DB
       const newmascota = {
         orden: "1",
-        fecha_suceso: hoy,
+        fecha_suceso: fecha_suceso || hoy,
         id_categoria: id_categoria,
         id_tipo: id_tipo,
         id_raza: (id_raza && id_raza !== "" && id_raza !== "null") ? id_raza : null,
         sexo: sexo || "Macho",
         foto2: req.file ? (req.file.location || req.file.filename) : "/img/iconoperrogato.png",
         titulo: (titulo || "Sin Nombre").substring(0, 70),
-        
-        // 🏁 CAMBIO CLAVE 1: Si el robot manda una nota (con el link), la usamos. 
-        // Si no, caemos en el default del Tel.
-        nota: nota || `Tel: ${celular || ''}`, 
-        
-        // 🏁 CAMBIO CLAVE 2: En la descripción podemos poner el nombre 
-        // pero dándole más espacio si querés (opcional)
-        des: `Contacto: ${nombre_contacto || 'Usuario'}`.substring(0, 250), 
+
+        // 🏁 LÓGICA SOLICITADA: Si existe urlFb, se guarda solo eso. Si no, el Tel.
+        nota: urlFb ? urlFb : `Tel: ${celular || ''}`,
+
+        // Guardamos el contacto en la descripción para que no se pierda
+        des: `Contacto: ${nombre_contacto || 'Usuario de Facebook'}`.substring(0, 250),
 
         id_usuario: id_final,
-        id_localidad: 1, 
-        id_provincia: 1, 
+        id_localidad: req.body.id_localidad ? parseInt(req.body.id_localidad) : 1,
+        id_provincia: 1,
         id_pais: "1",
         fecha_nacimiento: "1900-01-01",
         latitud: latitud ? parseFloat(latitud) : 0,
@@ -564,7 +579,7 @@ router.post(
         descuentoapartir: 0
       };
 
-      console.log("📝 Grabando en DB con la nota real...");
+      console.log("📝 Grabando en DB - Nota final:", newmascota.nota);
 
       const [result] = await pool.query("INSERT INTO mascota SET ?", [newmascota]);
 

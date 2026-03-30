@@ -28,7 +28,8 @@
       flex-direction: column;
       align-items: center;
       justify-content: flex-start;
-      background-color: #e5e7eb; /* bg-gray-200 equivalente */
+      background-color: #e5e7eb;
+      /* bg-gray-200 equivalente */
     }
 
     #map {
@@ -38,19 +39,28 @@
       display: block;
     }
 
-    .hidden { display: none !important; }
-    
-    .animate-in { 
-      animation: fadeIn 0.4s ease-out; 
+    .hidden {
+      display: none !important;
+    }
+
+    .animate-in {
+      animation: fadeIn 0.4s ease-out;
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
-    body { 
-      min-height: 100vh; 
+    body {
+      min-height: 100vh;
       margin: 0;
       overflow-x: hidden;
     }
@@ -59,7 +69,7 @@
 
 <body class="bg-gray-200 font-sans">
   <div class="w-full py-4 md:py-10 px-4 flex justify-center">
-    
+
     <div class="w-full max-w-2xl bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-300">
 
       <div class="bg-blue-600 px-6 py-4 flex items-center justify-between">
@@ -75,8 +85,8 @@
         <div id="dot-2" class="bg-gray-300 w-1/2 transition-all duration-500"></div>
       </div>
 
-      <form action="/Mascotamodi/{{pro.id_mascota}}" method="POST" enctype="multipart/form-data" 
-            class="p-8 min-h-[700px] flex flex-col" id="formModifica">
+      <form action="/Mascotamodi/{{pro.id_mascota}}" method="POST" enctype="multipart/form-data"
+        class="p-8 min-h-[700px] flex flex-col" id="formModifica">
 
         <div style="display: none;">
           <input type="hidden" name="id_mascota" value="{{pro.id_mascota}}">
@@ -88,28 +98,36 @@
         <div id="step-1" class="space-y-6 animate-in flex-grow flex flex-col">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="md:col-span-2 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-              <label class="block text-[11px] font-extrabold text-blue-700 uppercase mb-2 tracking-widest">Estado de la publicación</label>
-              <select name="id_categoria" id="id_categoria" class="w-full border border-blue-300 p-3.5 rounded-lg bg-blue-100 font-semibold outline-none focus:bg-white" required>
+              <label class="block text-[11px] font-extrabold text-blue-700 uppercase mb-2 tracking-widest">Estado de la
+                publicación</label>
+              <select name="id_categoria" id="id_categoria"
+                class="w-full border border-blue-300 p-3.5 rounded-lg bg-blue-100 font-semibold outline-none focus:bg-white"
+                required>
                 {{#each cat}}
-                  <option value="{{this.id_categoria}}" {{#if this.id_categoria_mascota}}selected{{/if}}>{{this.des}}</option>
+                <option value="{{this.id_categoria}}" {{#if this.id_categoria_mascota}}selected{{/if}}>{{this.des}}
+                </option>
                 {{/each}}
               </select>
             </div>
 
             <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-              <label class="block text-[11px] font-extrabold text-blue-700 uppercase mb-2 tracking-widest">Tipo de mascota</label>
-              <select name="id_tipo" id="id_tipo" class="w-full border border-blue-300 p-3.5 rounded-lg bg-blue-100 font-semibold outline-none" required>
+              <label class="block text-[11px] font-extrabold text-blue-700 uppercase mb-2 tracking-widest">Tipo de
+                mascota</label>
+              <select name="id_tipo" id="id_tipo"
+                class="w-full border border-blue-300 p-3.5 rounded-lg bg-blue-100 font-semibold outline-none" required>
                 {{#each tipo}}
-                  <option value="{{this.id_tipo}}" {{#if this.id_tipo_mascota}}selected{{/if}}>{{this.des}}</option>
+                <option value="{{this.id_tipo}}" {{#if this.id_tipo_mascota}}selected{{/if}}>{{this.des}}</option>
                 {{/each}}
               </select>
             </div>
 
             <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
               <label class="block text-[11px] font-extrabold text-blue-700 uppercase mb-2 tracking-widest">Raza</label>
-              <select name="id_raza" id="id_raza" class="w-full border border-blue-300 p-3.5 rounded-lg bg-blue-100 font-semibold outline-none" required>
+              <select name="id_raza" id="id_raza"
+                class="w-full border border-blue-300 p-3.5 rounded-lg bg-blue-100 font-semibold outline-none" required>
                 {{#each subcat}}
-                  <option value="{{this.id_raza}}" data-tipo="{{this.id_tipo}}" {{#if this.id_raza_mascota}}selected{{/if}}>{{this.des}}</option>
+                <option value="{{this.id_raza}}" data-tipo="{{this.id_tipo}}" {{#if
+                  this.id_raza_mascota}}selected{{/if}}>{{this.des}}</option>
                 {{/each}}
               </select>
             </div>
@@ -117,63 +135,76 @@
 
           <div class="flex flex-col md:flex-row gap-8 bg-gray-50 p-6 rounded-2xl border border-gray-200">
             <div class="w-full md:w-1/2 flex flex-col items-center">
-              <div class="w-full aspect-square bg-white rounded-2xl border-2 border-dashed border-blue-200 flex items-center justify-center relative overflow-hidden shadow-inner">
-                  <img id="img_preview" src="{{pro.foto2}}" class="w-full h-full object-contain p-2 transition-all duration-300" />
+              <div
+                class="w-full aspect-square bg-white rounded-2xl border-2 border-dashed border-blue-200 flex items-center justify-center relative overflow-hidden shadow-inner">
+                <img id="img_preview" src="{{pro.foto2}}"
+                  class="w-full h-full object-contain p-2 transition-all duration-300" />
               </div>
-              <button type="button" onclick="document.getElementById('input_foto').click()" class="mt-4 w-full bg-blue-600 text-white font-bold py-2 rounded-full text-sm hover:bg-blue-700 transition-colors shadow-md">
+              <button type="button" onclick="document.getElementById('input_foto').click()"
+                class="mt-4 w-full bg-blue-600 text-white font-bold py-2 rounded-full text-sm hover:bg-blue-700 transition-colors shadow-md">
                 <i class="fas fa-camera mr-2"></i>Cambiar Foto
               </button>
               <input type="file" name="foto2" id="input_foto" accept="image/*" class="hidden" />
             </div>
 
             <div class="w-full md:w-1/2 space-y-4">
-                <div>
-                    <label class="block text-[11px] font-extrabold text-blue-700 uppercase mb-1.5 tracking-widest ml-1">Nombre / Título</label>
-                    <input name="titulo" type="text" value="{{pro.titulo}}" required
-                          class="w-full border border-blue-300 p-3.5 rounded-xl bg-white outline-none font-semibold focus:ring-2 focus:ring-blue-400 transition-all">
-                </div>
+              <div>
+                <label
+                  class="block text-[11px] font-extrabold text-blue-700 uppercase mb-1.5 tracking-widest ml-1">Nombre /
+                  Título</label>
+                <input name="titulo" type="text" value="{{pro.titulo}}" required
+                  class="w-full border border-blue-300 p-3.5 rounded-xl bg-white outline-none font-semibold focus:ring-2 focus:ring-blue-400 transition-all">
+              </div>
 
-                <div>
-                    <label class="block text-[11px] font-extrabold text-blue-700 uppercase mb-1.5 tracking-widest ml-1">Descripción</label>
-                    <textarea name="des" rows="3" required
-                              class="w-full border border-blue-300 p-3.5 rounded-xl bg-white outline-none resize-none font-semibold focus:ring-2 focus:ring-blue-400 transition-all">{{pro.des}}</textarea>
-                </div>
+              <div>
+                <label
+                  class="block text-[11px] font-extrabold text-blue-700 uppercase mb-1.5 tracking-widest ml-1">Descripción</label>
+                <textarea name="des" rows="3" required
+                  class="w-full border border-blue-300 p-3.5 rounded-xl bg-white outline-none resize-none font-semibold focus:ring-2 focus:ring-blue-400 transition-all">{{pro.des}}</textarea>
+              </div>
 
-                <div>
-                    <label class="block text-[11px] font-extrabold text-blue-700 uppercase mb-1.5 tracking-widest ml-1">Nota Interna</label>
-                    <input name="nota" type="text" value="{{pro.nota}}"
-                          class="w-full border border-blue-300 p-3.5 rounded-xl bg-white outline-none font-semibold italic">
-                </div>
+              <div>
+                <label class="block text-[11px] font-extrabold text-blue-700 uppercase mb-1.5 tracking-widest ml-1">Nota
+                  Interna</label>
+                <input name="nota" type="text" value="{{pro.nota}}"
+                  class="w-full border border-blue-300 p-3.5 rounded-xl bg-white outline-none font-semibold italic">
+              </div>
             </div>
           </div>
 
-          <button type="button" onclick="cambiarPaso(2)" class="mt-auto w-full bg-blue-600 text-white font-black py-5 rounded-2xl shadow-lg uppercase tracking-widest hover:bg-blue-700 transition-all">
+          <button type="button" onclick="cambiarPaso(2)"
+            class="mt-auto w-full bg-blue-600 text-white font-black py-5 rounded-2xl shadow-lg uppercase tracking-widest hover:bg-blue-700 transition-all">
             Siguiente: Ubicación <i class="fas fa-arrow-right ml-2"></i>
           </button>
         </div>
 
         <div id="step-2" class="hidden space-y-6">
           <h3 class="text-xl font-bold text-gray-800 text-center">¿Dónde se perdió?</h3>
-          
+
           <div class="bg-white rounded-2xl shadow-lg border-2 border-blue-200 overflow-hidden relative">
             <div id="map"></div>
           </div>
 
           <div class="space-y-4 bg-gray-50 p-4 rounded-2xl border border-gray-200">
-              <div>
-                  <label class="block text-xs font-black text-blue-600 uppercase mb-1">DIRECCION DETECTADA</label>
-                  <input type="text" id="ubicacion_calle" name="calle" value="{{pro.direccion}}" class="w-full p-3 border-2 border-gray-100 rounded-xl outline-none focus:border-blue-500">
-              </div>
-              <div class="grid grid-cols-2 gap-4">
-                  <input type="text" id="ubicacion_ciudad" name="ciudad" placeholder="Ciudad" class="p-3 border-2 border-gray-100 rounded-xl outline-none focus:border-blue-500">
-                  <input type="text" id="ubicacion_provincia" name="provincia" placeholder="Provincia" class="p-3 border-2 border-gray-100 rounded-xl outline-none focus:border-blue-500">
-              </div>
-              <input type="hidden" id="ubicacion_pais" name="pais" value="Argentina">
+            <div>
+              <label class="block text-xs font-black text-blue-600 uppercase mb-1">DIRECCION DETECTADA</label>
+              <input type="text" id="ubicacion_calle" name="calle" value="{{pro.direccion}}"
+                class="w-full p-3 border-2 border-gray-100 rounded-xl outline-none focus:border-blue-500">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <input type="text" id="ubicacion_ciudad" name="ciudad" placeholder="Ciudad"
+                class="p-3 border-2 border-gray-100 rounded-xl outline-none focus:border-blue-500">
+              <input type="text" id="ubicacion_provincia" name="provincia" placeholder="Provincia"
+                class="p-3 border-2 border-gray-100 rounded-xl outline-none focus:border-blue-500">
+            </div>
+            <input type="hidden" id="ubicacion_pais" name="pais" value="Argentina">
           </div>
 
           <div class="flex gap-4">
-            <button type="button" onclick="cambiarPaso(1)" class="flex-1 bg-gray-300 text-gray-800 py-4 rounded-2xl font-bold uppercase text-sm">Volver</button>
-            <button type="submit" class="flex-[2] bg-blue-700 text-white font-black py-4 rounded-2xl uppercase shadow-xl hover:bg-blue-800 transition-all">
+            <button type="button" onclick="cambiarPaso(1)"
+              class="flex-1 bg-gray-300 text-gray-800 py-4 rounded-2xl font-bold uppercase text-sm">Volver</button>
+            <button type="submit"
+              class="flex-[2] bg-blue-700 text-white font-black py-4 rounded-2xl uppercase shadow-xl hover:bg-blue-800 transition-all">
               Guardar Cambios
             </button>
           </div>
@@ -186,21 +217,65 @@
   <script src="/js/mascotamodifica.js"></script>
 
   <script>
+    document.getElementById('formModifica').addEventListener('submit', function (e) {
+      // Si llegamos aquí, el formulario es válido
+      console.log("Enviando formulario...");
+
+      // Opcional: Mostrar un loader de SweetAlert para que el usuario vea que algo pasa
+      Swal.fire({
+        title: 'Guardando...',
+        text: 'Estamos actualizando la información',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+    });
+
+
     function cambiarPaso(paso) {
       const s1 = document.getElementById('step-1');
       const s2 = document.getElementById('step-2');
       const d1 = document.getElementById('dot-1');
       const d2 = document.getElementById('dot-2');
 
+      // --- NUEVA VALIDACIÓN ---
+      if (paso === 2) {
+        // Seleccionamos todos los inputs y selects obligatorios del paso 1
+        const camposPaso1 = s1.querySelectorAll('input[required], select[required], textarea[required]');
+        let valido = true;
+
+        camposPaso1.forEach(campo => {
+          if (!campo.checkValidity()) {
+            valido = false;
+            campo.classList.add('border-red-500', 'bg-red-50'); // Feedback visual simple
+          } else {
+            campo.classList.remove('border-red-500', 'bg-red-50');
+          }
+        });
+
+        if (!valido) {
+          Swal.fire({
+            icon: 'warning',
+            title: '¡Faltan datos!',
+            text: 'Por favor, completa todos los campos obligatorios antes de continuar.',
+            confirmButtonColor: '#2563eb'
+          });
+          return; // ✋ BLOQUEO: No sale del Step 1
+        }
+      }
+      // --- FIN VALIDACIÓN ---
+
+      // Si es válido o si vuelve al paso 1, ejecutamos el cambio visual
       if (paso === 2) {
         s1.classList.add('hidden');
         s2.classList.remove('hidden');
         d1.classList.replace('bg-yellow-400', 'bg-blue-600');
         d2.classList.replace('bg-gray-300', 'bg-yellow-400');
-        
+
         if (typeof map !== 'undefined') {
           setTimeout(() => {
-              map.invalidateSize();
+            map.invalidateSize();
           }, 300);
         }
       } else {
@@ -211,6 +286,8 @@
       }
       window.scrollTo(0, 0);
     }
+
   </script>
 </body>
+
 </html>
